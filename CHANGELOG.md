@@ -2,6 +2,12 @@
 
 All notable changes to the DP Content Manager are documented in this file.
 
+## [1.0.1] - 2026-02-26
+
+### Fixed
+
+- Added ClearType anti-aliasing (`TextRenderingHint.ClearTypeGridFit`) to owner-draw tab headers for smoother text rendering in dark mode
+
 ## [1.0.0] - 2026-02-26
 
 ### Added

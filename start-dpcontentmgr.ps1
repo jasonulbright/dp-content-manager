@@ -981,6 +981,7 @@ if ($script:Prefs.DarkMode) {
     $tabMain.DrawMode = [System.Windows.Forms.TabDrawMode]::OwnerDrawFixed
     $tabMain.Add_DrawItem({
         param($s, $e)
+        $e.Graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
         $tab = $s.TabPages[$e.Index]
         $isSelected = ($s.SelectedIndex -eq $e.Index)
         $bgColor = if ($isSelected) { $clrAccent } else { $clrPanelBg }
