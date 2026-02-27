@@ -1,0 +1,9 @@
+# Runtime logs
+Logs/
+
+# User-generated reports
+Reports/
+
+# Per-user settings
+DPContentMgr.windowstate.json
+DPContentMgr.prefs.json
