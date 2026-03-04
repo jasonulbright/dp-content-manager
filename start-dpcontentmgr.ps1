@@ -1267,11 +1267,11 @@ $splitDPDetail.Panel2.Controls.Add($gridDPContent)
 $form.Controls.Add($menuStrip)
 $menuStrip.SendToBack()
 
-$pnlSep2.BringToFront()
-$pnlFilter.BringToFront()
-$pnlSep1.BringToFront()
-$pnlConnBar.BringToFront()
 $pnlHeader.BringToFront()
+$pnlConnBar.BringToFront()
+$pnlSep1.BringToFront()
+$pnlFilter.BringToFront()
+$pnlSep2.BringToFront()
 
 $tabMain.BringToFront()
 
@@ -1598,8 +1598,17 @@ function Invoke-RedistributeSelected {
         [System.Windows.Forms.Application]::DoEvents()
 
         try {
-            Start-CMContentDistribution -PackageId $pair.PackageID -DistributionPointName $pair.DPName -ErrorAction Stop
-            $successCount++
+            # WMI RefreshNow triggers redistribution (same mechanism as the CM console)
+            $ns = "root\SMS\site_$($script:Prefs.SiteCode)"
+            $wmiQuery = "SELECT * FROM SMS_DistributionPoint WHERE PackageID = '$($pair.PackageID)' AND ServerNALPath LIKE '%$($pair.DPName)%'"
+            $dpInst = Get-CimInstance -Namespace $ns -Query $wmiQuery -ComputerName $script:Prefs.SMSProvider -ErrorAction Stop
+            if ($dpInst) {
+                $dpInst | Set-CimInstance -Property @{ RefreshNow = $true } -ErrorAction Stop
+                $successCount++
+            } else {
+                Add-LogLine -TextBox $txtLog -Message "  NOT FOUND: No DP instance for $($pair.PackageID) on $($pair.DPName)"
+                $failCount++
+            }
         }
         catch {
             Add-LogLine -TextBox $txtLog -Message "  FAILED: $_"
@@ -1641,7 +1650,7 @@ function Invoke-ValidateSelected {
         $dpNames = @($script:AllStatus | Where-Object { $_.PackageID -eq $pkgId } | ForEach-Object { $_.DPName } | Select-Object -Unique)
         foreach ($dp in $dpNames) {
             try {
-                Invoke-CMContentValidation -PackageId $pkgId -DistributionPointName $dp -ErrorAction Stop
+                Invoke-CMContentValidation -Id $pkgId -DistributionPointName $dp -ErrorAction Stop
                 $count++
             } catch { }
         }

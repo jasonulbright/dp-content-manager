@@ -628,9 +628,19 @@ function Invoke-RedistributeContent {
         if ($ProgressCallback) { & $ProgressCallback $i $total $dp }
 
         try {
-            Start-CMContentDistribution -PackageId $PackageID -DistributionPointName $dp -ErrorAction Stop
-            Write-Log "Redistributed $PackageID to $dp"
-            $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+            # WMI RefreshNow triggers redistribution (same mechanism as the CM console)
+            # Start-CMContentDistribution is for initial distribution only and fails on existing DPs
+            $ns = "root\SMS\site_$($script:ConnectedSiteCode)"
+            $wmiQuery = "SELECT * FROM SMS_DistributionPoint WHERE PackageID = '$PackageID' AND ServerNALPath LIKE '%$dp%'"
+            $dpInst = Get-CimInstance -Namespace $ns -Query $wmiQuery -ComputerName $script:ConnectedSMSProvider -ErrorAction Stop
+            if ($dpInst) {
+                $dpInst | Set-CimInstance -Property @{ RefreshNow = $true } -ErrorAction Stop
+                Write-Log "Redistributed $PackageID to $dp"
+                $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+            } else {
+                Write-Log "No SMS_DistributionPoint instance found for $PackageID on $dp" -Level WARN
+                $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $false; Error = 'DP instance not found' }
+            }
         }
         catch {
             Write-Log "Failed to redistribute $PackageID to $dp : $_" -Level ERROR
@@ -696,7 +706,7 @@ function Invoke-ContentValidation {
         if ($ProgressCallback) { & $ProgressCallback $i $total $dp }
 
         try {
-            Invoke-CMContentValidation -PackageId $PackageID -DistributionPointName $dp -ErrorAction Stop
+            Invoke-CMContentValidation -Id $PackageID -DistributionPointName $dp -ErrorAction Stop
             Write-Log "Validation initiated for $PackageID on $dp"
             $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
         }
