@@ -2,6 +2,15 @@
 
 All notable changes to the DP Content Manager are documented in this file.
 
+## [1.0.2] - 2026-03-04
+
+### Fixed
+- Redistribute action now uses WMI `RefreshNow` on `SMS_DistributionPoint` (same mechanism as the CM console) -- `Start-CMContentDistribution` only works for initial distribution and failed on content already present on a DP
+- Content validation parameter corrected from `-PackageId` to `-Id` on `Invoke-CMContentValidation`
+- Dock Z-order: reversed `BringToFront()` sequence so header panel renders at top instead of below the filter bar
+
+---
+
 ## [1.0.1] - 2026-02-26
 
 ### Fixed
