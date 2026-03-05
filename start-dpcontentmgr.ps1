@@ -251,6 +251,7 @@ if ($script:Prefs.DarkMode) {
 # ---------------------------------------------------------------------------
 
 function Show-PreferencesDialog {
+    $scriptFile = Join-Path $PSScriptRoot "start-dpcontentmgr.ps1"
     $dlg = New-Object System.Windows.Forms.Form
     $dlg.Text = "Preferences"
     $dlg.Size = New-Object System.Drawing.Size(420, 300)
@@ -371,7 +372,7 @@ function Show-PreferencesDialog {
                 [System.Windows.Forms.MessageBoxIcon]::Question
             )
             if ($restart -eq [System.Windows.Forms.DialogResult]::Yes) {
-                Start-Process powershell -ArgumentList @('-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath)
+                Start-Process powershell -ArgumentList @('-ExecutionPolicy', 'Bypass', '-File', $scriptFile)
                 $form.Close()
             }
         }
