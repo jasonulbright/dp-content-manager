@@ -43,6 +43,8 @@ powershell -ExecutionPolicy Bypass -File start-dpcontentmgr.ps1
 
 Uses a single WMI bulk query (`SMS_PackageStatusDistPointsSummarizer`) to retrieve all content-to-DP status in one call, with O(n) hashtable aggregation. Designed for 300+ DP environments where per-object CM cmdlet iteration would take 40+ minutes.
 
+> **Why WMI here:** No ConfigurationManager PowerShell cmdlet exposes bulk per-DP content state across all content objects. The summarizer class is the only way to get this data in a single query. Similarly, single-DP redistribution uses `SMS_DistributionPoint` `RefreshNow` because `Start-CMContentDistribution` only handles initial distribution. All other operations (content retrieval, validation, removal) use CM cmdlets.
+
 ### Actions
 
 - **Redistribute Selected** -- Redistribute failed content to its failed DPs
