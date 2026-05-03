@@ -1,0 +1,9 @@
+{
+    "ProjectType":  "mecm-tool",
+    "Description":  "MECM distribution point content management and validation",
+    "Status":  "active",
+    "Category":  "MECM",
+    "Version":  "1.0.0",
+    "ValidationSchedule":  "monthly",
+    "Notes":  "INFO: v1.0 WPF shell shipped 2026-05-02 (MahApps sidebar, 3 views, bulk-op preview-before-commit, 20 Pester green, contrast harness clean)"
+}
