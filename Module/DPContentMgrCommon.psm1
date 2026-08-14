@@ -726,7 +726,9 @@ function Export-ContentStatusHtml {
         '</style>'
     ) -join "`r`n"
 
-    $headerRow = ($DataTable.Columns | ForEach-Object { "<th>$($_.ColumnName)</th>" }) -join ''
+    # HtmlEncode every site-derived string: names with angle brackets or
+    # ampersands otherwise corrupt the report markup.
+    $headerRow = ($DataTable.Columns | ForEach-Object { "<th>$([System.Net.WebUtility]::HtmlEncode($_.ColumnName))</th>" }) -join ''
     $bodyRows = foreach ($row in $DataTable.Rows) {
         $cells = foreach ($col in $DataTable.Columns) {
             $val = [string]$row[$col.ColumnName]
@@ -737,7 +739,7 @@ function Export-ContentStatusHtml {
             elseif ($col.ColumnName -match 'InProgress' -and $val -match '^\d+$' -and [int]$val -gt 0) {
                 $cssClass = ' class="inprog"'
             }
-            "<td$cssClass>$val</td>"
+            "<td$cssClass>$([System.Net.WebUtility]::HtmlEncode($val))</td>"
         }
         "<tr>$($cells -join '')</tr>"
     }
@@ -745,10 +747,10 @@ function Export-ContentStatusHtml {
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $html = @(
         '<!DOCTYPE html>',
-        '<html><head><meta charset="utf-8"><title>' + $ReportTitle + '</title>',
+        '<html><head><meta charset="utf-8"><title>' + [System.Net.WebUtility]::HtmlEncode($ReportTitle) + '</title>',
         $css,
         '</head><body>',
-        "<h1>$ReportTitle</h1>",
+        "<h1>$([System.Net.WebUtility]::HtmlEncode($ReportTitle))</h1>",
         "<div class=`"summary`">Generated: $timestamp | Rows: $($DataTable.Rows.Count)</div>",
         "<table><thead><tr>$headerRow</tr></thead>",
         "<tbody>$($bodyRows -join "`r`n")</tbody></table>",
