@@ -1,5 +1,10 @@
 # DP Content Manager
 
+[![Latest release](https://img.shields.io/github/v/release/jasonulbright/dp-content-manager?label=release)](https://github.com/jasonulbright/dp-content-manager/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/jasonulbright/dp-content-manager/total?label=downloads)](https://github.com/jasonulbright/dp-content-manager/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D4)](#requirements)
+[![License](https://img.shields.io/github/license/jasonulbright/dp-content-manager)](LICENSE)
+
 A MahApps.Metro WPF GUI for managing MECM distribution point content at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate with mandatory preview-before-commit, and CSV / HTML export.
 
 ![DP Content Manager](screenshot.png)
