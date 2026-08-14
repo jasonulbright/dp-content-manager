@@ -68,9 +68,10 @@ dp-content-manager/
 +- start-dpcontentmgr.ps1                    # WPF shell
 +- MainWindow.xaml                           # Main window layout
 +- Lib/                                      # Vendored MahApps.Metro 2.4.10
+|  \- SuiteCommon/                           # Vendored shared core: logging + CM connection
 +- Module/
 |  +- DPContentMgrCommon.psd1                # Module manifest
-|  \- DPContentMgrCommon.psm1                # Business logic (28 functions)
+|  \- DPContentMgrCommon.psm1                # Business logic (21 functions)
 +- Logs/                                     # Session logs (per-run)
 +- Reports/                                  # CSV / HTML exports
 +- CHANGELOG.md

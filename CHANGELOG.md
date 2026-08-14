@@ -2,6 +2,23 @@
 
 All notable changes to DP Content Manager are documented in this file.
 
+## [1.1.0] - 2026-08-14
+
+### Changed
+
+- **Shared plumbing moved to the vendored `SuiteCommon` module.** Logging
+  (`Initialize-Logging`, `Write-Log`) and CM site connection
+  (`Connect-CMSite`, `Disconnect-CMSite`, `Test-CMConnection`) now load
+  from `Lib\SuiteCommon\`, shared across the tool suite and synced from
+  the suite-core repository instead of hand-edited per repo. Behavior is
+  unchanged — same log format, same connection flow (globally scoped
+  CMSite PSDrive, `Get-CMSite` verification) — and the connection now
+  survives a stale drive whose provider connection died: `Connect-CMSite`
+  tears it down and rebuilds it instead of failing.
+- **Redistribution reads the connection via `Get-CMConnectionInfo`**
+  instead of module-private state, keeping the bulk WMI redistribute path
+  working across the module split.
+
 ## [1.0.0] - 2026-05-02
 
 DP Content Manager is a MahApps.Metro WPF GUI for auditing, redistributing,

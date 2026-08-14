@@ -1,20 +1,14 @@
 @{
     RootModule        = 'DPContentMgrCommon.psm1'
-    ModuleVersion     = '1.0.0'
+    ModuleVersion     = '1.1.0'
     GUID              = 'b2c3d4e5-f6a7-8901-bcde-f23456789012'
     Author            = 'Jason Ulbright'
     Description       = 'MECM distribution point content status, redistribution, validation, and orphan detection.'
     PowerShellVersion = '5.1'
 
     FunctionsToExport = @(
-        # Logging
-        'Initialize-Logging'
-        'Write-Log'
-
-        # CM Connection
-        'Connect-CMSite'
-        'Disconnect-CMSite'
-        'Test-CMConnection'
+        # Logging and CM connection come from the vendored SuiteCommon
+        # module (Lib\SuiteCommon), imported globally by the root module.
 
         # Content Retrieval
         'Get-AllDistributionPoints'
