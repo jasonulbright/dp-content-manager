@@ -410,37 +410,22 @@ $script:BgPowerShell   = $null
 $script:BgInvokeHandle = $null
 $script:BgState        = $null
 $script:BgTimer        = $null
+$script:BgGraveyard    = @()
 
 function Initialize-BgRunspace {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Lazy-init; idempotent.')]
     param()
     if ($script:BgRunspace -and $script:BgRunspace.RunspaceStateInfo.State -eq 'Opened') { return }
-    $script:BgRunspace = [runspacefactory]::CreateRunspace()
-    $script:BgRunspace.ApartmentState = 'STA'
-    $script:BgRunspace.ThreadOptions  = 'ReuseThread'
-    $script:BgRunspace.Open()
-    $modulePath = Join-Path $PSScriptRoot 'Module\DPContentMgrCommon.psd1'
-    $initPS = [powershell]::Create()
-    $initPS.Runspace = $script:BgRunspace
-    [void]$initPS.AddScript({
-        param($ModulePath, $LogPath)
-        Import-Module -Name $ModulePath -Force -DisableNameChecking
-        if ($LogPath) { Initialize-Logging -LogPath $LogPath -Attach }
-    }).AddArgument($modulePath).AddArgument($script:ToolLogPath)
-    [void]$initPS.Invoke()
-    $initPS.Dispose()
+    $script:BgRunspace = New-SuiteBgRunspace -ModulePath (Join-Path $PSScriptRoot 'Module\DPContentMgrCommon.psd1') -LogPath $script:ToolLogPath
 }
 
 function Dispose-BgWork {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '', Justification='Dispose semantics intentional.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Tears down ephemeral runspace plumbing.')]
     param()
-    if ($script:BgTimer) { try { $script:BgTimer.Stop() } catch { $null = $_ } ; $script:BgTimer = $null }
-    if ($script:BgPowerShell) {
-        try { [void]$script:BgPowerShell.Stop() } catch { $null = $_ }
-        try { $script:BgPowerShell.Dispose() }   catch { $null = $_ }
-        $script:BgPowerShell = $null
-    }
+    $script:BgGraveyard = @(Stop-SuiteBgWork -PowerShell $script:BgPowerShell -Timer $script:BgTimer -Graveyard $script:BgGraveyard)
+    $script:BgTimer = $null
+    $script:BgPowerShell = $null
     $script:BgInvokeHandle = $null
 }
 
@@ -1022,7 +1007,8 @@ function Show-OptionsDialog {
         Save-DpcmPreferences -Prefs $global:Prefs
         if ($changed) {
             Dispose-BgWork
-            if ($script:BgRunspace) { try { $script:BgRunspace.Close() } catch { $null = $_ } ; try { $script:BgRunspace.Dispose() } catch { $null = $_ } ; $script:BgRunspace = $null }
+            Close-SuiteBgRunspace -Runspace $script:BgRunspace
+            $script:BgRunspace = $null
             $script:BgState = $null
             $script:IsConnectedFromBg = $false
             $progressOverlay.Visibility = [System.Windows.Visibility]::Collapsed
@@ -1042,7 +1028,7 @@ $global:WindowStatePath = Join-Path $PSScriptRoot 'DPContentMgr.windowstate.json
 $window.Add_Closing({
     Save-WindowState -Window $window -Path $global:WindowStatePath -ExtraState @{ ActiveView = $script:ActiveView }
     Dispose-BgWork
-    if ($script:BgRunspace) { try { $script:BgRunspace.Close() } catch { $null = $_ } ; try { $script:BgRunspace.Dispose() } catch { $null = $_ } }
+    Close-SuiteBgRunspace -Runspace $script:BgRunspace
 })
 
 $window.Add_Loaded({
