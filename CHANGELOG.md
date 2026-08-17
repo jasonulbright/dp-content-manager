@@ -2,6 +2,22 @@
 
 All notable changes to DP Content Manager are documented in this file.
 
+## [1.2.0] - 2026-08-16
+
+### Changed
+
+- **Window chrome, theming, dialogs, and background-work now come from
+  the vendored `SuiteCommon` module** (0.3.0): the title-bar drag block,
+  sidebar/title-bar theming, dialog theming, and window-state
+  persistence load from `Lib\SuiteCommon\`, and the background runspace
+  lifecycle delegates to the shared helpers. Behavior gains from the
+  shared layer: hook state no longer leaks when a window closes, a
+  maximized close persists the pre-maximize geometry instead of
+  full-screen extents, an off-screen saved position is clamped into the
+  nearest monitor instead of discarding the saved size, and teardown no
+  longer blocks the UI thread while a background pipeline is stuck
+  inside a provider call.
+
 ## [1.1.0] - 2026-08-14
 
 ### Changed

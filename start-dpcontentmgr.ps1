@@ -964,7 +964,7 @@ function Show-OptionsDialog {
             </StackPanel>
             <StackPanel x:Name="paneAbout" Visibility="Collapsed">
                 <TextBlock Text="About" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                <TextBlock Text="DP Content Manager v1.1.0" FontSize="13" FontWeight="SemiBold"/>
+                <TextBlock Text="DP Content Manager v1.2.0" FontSize="13" FontWeight="SemiBold"/>
                 <TextBlock Text="Audit DP content distribution at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate. WMI bulk-status pull keeps the round-trip count down even on large environments."
                            FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"/>
                 <TextBlock Text="Author: Jason Ulbright. License: MIT."
