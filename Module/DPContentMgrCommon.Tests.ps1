@@ -10,7 +10,7 @@
     detection (Find-OrphanedContent), DP storage analysis, and the
     plain-text status summary. CM-cmdlet integration (Connect-CMSite,
     Get-AllDistributionPoints, Get-AllContentObjects, Invoke-RedistributeContent,
-    Remove-ContentFromDP, etc.) requires a live MECM site and is
+    Remove-ContentFromDP, etc.) requires a live ConfigMgr site and is
     verified end-to-end on a CM-console-equipped client (CLIENT01)
     rather than mocked here.
 

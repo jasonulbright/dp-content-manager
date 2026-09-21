@@ -5,7 +5,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-0078D4)](#requirements)
 [![License](https://img.shields.io/github/license/jasonulbright/dp-content-manager)](LICENSE)
 
-A MahApps.Metro WPF GUI for managing MECM distribution point content at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate with mandatory preview-before-commit, and CSV / HTML export.
+Manage Configuration Manager distribution point content at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate with mandatory preview-before-commit, and CSV / HTML export.
 
 ![DP Content Manager](screenshot.png)
 
@@ -15,7 +15,7 @@ A MahApps.Metro WPF GUI for managing MECM distribution point content at scale: p
 - PowerShell 5.1
 - .NET Framework 4.7.2+
 - Configuration Manager console installed (provides the `ConfigurationManager` PowerShell module)
-- MECM RBAC rights to read DP content + redistribute / remove content
+- Configuration Manager RBAC rights to read DP content + redistribute / remove content
 
 ## Quick Start
 
