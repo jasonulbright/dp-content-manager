@@ -18,7 +18,7 @@
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
-    Version    : 2026.09.21.0007
+    Version    : 2026.09.21.0008
     Updated    : 2026-09-21
 #>
 
@@ -69,6 +69,11 @@ function Save-DpcmPreferences {
     $null = Save-SuiteSettings -Path $global:PrefsPath -Settings $Prefs
 }
 $global:Prefs = Get-DpcmPreferences
+
+# The suite launcher hands its site code and provider to each tool it starts.
+# A value saved in this tool wins; the launcher value fills an empty one.
+if (-not $global:Prefs.SiteCode    -and $env:SUITE_CM_SITECODE) { $global:Prefs.SiteCode    = [string]$env:SUITE_CM_SITECODE }
+if (-not $global:Prefs.SMSProvider -and $env:SUITE_CM_PROVIDER) { $global:Prefs.SMSProvider = [string]$env:SUITE_CM_PROVIDER }
 
 $script:ToolLogPath = Join-Path $__txDir ('DPCM-{0}.log' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 Initialize-Logging -LogPath $script:ToolLogPath
