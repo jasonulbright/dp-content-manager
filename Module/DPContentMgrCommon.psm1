@@ -573,7 +573,7 @@ function Invoke-ContentValidation {
 function Find-OrphanedContent {
     <#
     .SYNOPSIS
-        Identifies content on DPs that no longer has a matching content object in MECM.
+        Identifies content on DPs that no longer has a matching content object in ConfigMgr.
 
     .DESCRIPTION
         Compares PackageIDs in status rows against known content objects.
