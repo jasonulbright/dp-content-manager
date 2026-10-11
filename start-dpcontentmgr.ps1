@@ -18,7 +18,7 @@
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
-    Version    : 2026.10.11.0010
+    Version    : 2026.10.11.0011
     Updated    : 2026-09-21
 #>
 
