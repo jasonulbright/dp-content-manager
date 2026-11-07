@@ -201,7 +201,7 @@
                 <StackPanel>
                     <TextBlock x:Name="txtModuleTitle" Text="DPs" FontSize="18" FontWeight="SemiBold"/>
                     <TextBlock x:Name="txtModuleSubtitle"
-                               Text="Configure Site / Provider in Options, then click Refresh."
+                               Text="Per-DP rollup of total content, installed, in progress, failed."
                                FontSize="11"
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource MahApps.Brushes.Gray1}"
