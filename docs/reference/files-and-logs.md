@@ -4,7 +4,7 @@ This page lists every folder and file that DP Content Manager writes.
 
 ## What it does
 
-The tool writes in the folder of the script. It writes nothing in the registry. A bulk action that you run changes the site, not these files.
+The tool writes in the folder of the script. It writes nothing in the registry. When the tool is installed by the suite installer, the daily update check also keeps a cache file, `%LOCALAPPDATA%\AppPackagerSuite\update-check.json`, outside the script folder. A plain extract of the zip does not create it. A bulk action that you run changes the site, not these files.
 
 ## When to use it
 

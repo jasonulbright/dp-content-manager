@@ -23,7 +23,7 @@ None.
 | A view is empty. | No refresh has run. | Select **Refresh**. |
 | Status Issues shows `0 issue rows`. | No (DP, content) pair is in a non-OK state. | None. |
 | A bulk button opens no dialog. | The selection has no matching operations, or nothing is selected. | Select rows that are on a DP. Read the log. |
-| The **Close** button of the dialog is disabled. | A run is in progress. | Wait for the run to end. |
+| The dialog still shows operations in progress. | A run has not ended. | Wait until the status line shows `Done.` before you select **Close**. |
 | The settings are lost. | The folder is not writable. | Move the tool to a writable folder. |
 
 ## Steps

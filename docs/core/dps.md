@@ -4,11 +4,11 @@ The DPs view shows one row for each distribution point.
 
 ## What it does
 
-Each row shows a status glyph, the DP name, the site, the total content, the number installed, in progress and failed, the percent OK and whether the DP is a pull DP. The pane below the grid shows the content roll-up and the storage analysis of the selected DP.
+Each row shows a status glyph, the DP name, the site, the total content, the number installed, in progress and failed, the percent OK and whether the DP is a pull DP. The pane below the grid shows the content roll-up of the selected DP and an estimate of its content size. The estimate is the sum of the source sizes of the content that has a status row on the DP, failed rows included. It is not the disk capacity or the free space of the DP.
 
 ## When to use it
 
-Use it to see which distribution points have problems and how full they are.
+Use it to see which distribution points have problems and how much content each one holds.
 
 ## Requirements
 

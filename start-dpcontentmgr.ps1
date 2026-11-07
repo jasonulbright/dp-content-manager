@@ -266,7 +266,7 @@ function Update-ActionBarVisibility {
             $btnExportHtml.Visibility   = [System.Windows.Visibility]::Visible
             $txtFilter.Tag              = 'Filter by content name or PackageID...'
             $cboStatusFilter.Items.Clear()
-            foreach ($it in @('All','Application','Package','SUDP','BootImage','OSImage','DriverPackage','TaskSequence')) {
+            foreach ($it in @('All','Application','Package','SU Deployment Pkg','Boot Image','OS Image','Driver Package','Task Sequence')) {
                 $cboItem = New-Object System.Windows.Controls.ComboBoxItem
                 $cboItem.Content = $it
                 if ($it -eq 'All') { $cboItem.IsSelected = $true }

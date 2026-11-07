@@ -14,7 +14,8 @@ Use it to open the firewall for the tool, or to check the traffic.
 
 | Call | Target | When | Content |
 |---|---|---|---|
-| ConfigurationManager module | The SMS Provider in **Options > Connection**, through the site drive that the console module opens. The ports are those of the console. | Every refresh, and every button that changes the site. | `Get-CM*` reads, one CIM query on `SMS_PackageStatusDistPointsSummarizer` for the status of all content, and the redistribute, remove and validate actions. |
+| ConfigurationManager module | The SMS Provider in **Options > Connection**, through the site drive that the console module opens. The ports are those of the console. | Every refresh, and every button that changes the site. |
+| CIM query to the SMS Provider computer | WS-Management (WSMan). The default ports are 5985 for HTTP and 5986 for HTTPS, as the listener of the computer is set. The console ports do not cover this connection. | Every refresh. | One query on `SMS_PackageStatusDistPointsSummarizer` for the status of all content. | `Get-CM*` reads, one CIM query on `SMS_PackageStatusDistPointsSummarizer` for the status of all content, and the redistribute, remove and validate actions. |
 | `https://api.github.com/repos/<repository>/releases/latest` | HTTPS to GitHub. | At the start of the window, once a day, only when the tool is installed by the suite installer. | The check for a newer suite version. The result goes to the log. |
 
 ## Steps

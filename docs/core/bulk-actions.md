@@ -4,7 +4,7 @@ Every bulk action opens this dialog before it changes anything.
 
 ## What it does
 
-The dialog shows the full list of (DP, content) pairs that the action touches. You review the list. The run button, for example **Validate 1**, runs the operations one by one. Each row shows OK or FAIL and the error. The **Close** button stays disabled while the run is in progress. This prevents a run of a large list that you did not read.
+The dialog shows the full list of (DP, content) pairs that the action touches. You review the list. The run button, for example **Validate 1**, runs the operations one by one. Each row shows OK or FAIL and the error. The status line shows `Done. <n> succeeded, <m> failed.` when the run ends. Wait for that line before you select **Close**. Closing the dialog does not stop operations that are running, and it hides their progress.
 
 ## When to use it
 
@@ -23,7 +23,7 @@ It opens when you select **Redistribute Failed...**, **Remove from DP...**, **Va
 ![The Validate preview](../images/dialog-validate-preview.png)
 
 3. Select the run button to run the list, or select **Close** to leave without a change.
-4. After a run, read the **Result** and **Detail** columns. The log shows `<action>: <n> succeeded, <n> failed across <n> operations.` The tool then refreshes the data.
+4. After a run, read the **Result** and **Detail** columns, then select **Close**. The log shows `<action>: <n> succeeded, <n> failed across <n> operations.` The tool refreshes the data only after the dialog has closed. Close the dialog before you wait for the refresh.
 
 This guide selected **Close** in the previews. It did not run an action. The run and the result were read from the code and the README only.
 
@@ -32,7 +32,7 @@ This guide selected **Close** in the previews. It did not run an action. The run
 | Control | Effect |
 |---|---|
 | Run button (`<action> <n>`) | Runs the listed operations. |
-| **Close** | Closes the dialog. It is disabled during a run. |
+| **Close** | Closes the dialog. Use it after the status line shows `Done.` |
 
 ## Limits
 

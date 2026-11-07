@@ -22,3 +22,16 @@ Describe 'Page subtitle' {
         $nodeSubtitle.GetAttribute('Text') | Should -BeExactly $strDpsSubtitle
     }
 }
+
+Describe 'Content type filter' {
+    It 'offers only content types that the module gives to the rows, so that every choice can match' {
+        $strScript = Get-Content -LiteralPath (Join-Path -Path $script:strRoot -ChildPath 'start-dpcontentmgr.ps1') -Raw
+        $strModule = Get-Content -LiteralPath (Join-Path -Path $script:strRoot -ChildPath 'Module\DPContentMgrCommon.psm1') -Raw
+        $strList = [regex]::Match($strScript, "(?s)'Content' \{.*?foreach \(\`$it in @\(([^)]+)\)\)").Groups[1].Value
+        $strList | Should -Not -BeNullOrEmpty
+        $arrChoice = @([regex]::Matches($strList, "'([^']+)'") | ForEach-Object { $_.Groups[1].Value } | Where-Object { $_ -ne 'All' })
+        $arrChoice.Count | Should -BeGreaterThan 0
+        $arrType = @([regex]::Matches($strModule, "ContentType\s*=\s*'([^']+)'") | ForEach-Object { $_.Groups[1].Value })
+        foreach ($strChoice in $arrChoice) { $arrType | Should -Contain $strChoice -Because "the filter choice $strChoice" }
+    }
+}

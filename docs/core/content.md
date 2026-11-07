@@ -34,7 +34,7 @@ Use it to find out where a content object is, and to fix or remove it on its DPs
 ### Filter the view
 
 1. Type text in the filter box. The grid matches the content name and the package ID.
-2. Select a type in the list: **All**, **Application**, **Package**, **SUDP**, **BootImage**, **OSImage**, **DriverPackage** or **TaskSequence**.
+2. Select a type in the list: **All**, **Application**, **Package**, **SU Deployment Pkg**, **Boot Image**, **OS Image**, **Driver Package** or **Task Sequence**. The list holds exactly the types that the **Type** column shows.
 
 ![The filter text Doc](../images/content-filter-text.png)
 
