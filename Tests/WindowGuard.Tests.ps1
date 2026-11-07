@@ -18,6 +18,14 @@ BeforeAll {
 }
 
 Describe 'Test-WindowTestsAllowed' {
+    It 'has no ComputerName parameter and decides on the opt-in only' {
+        $params = (Get-Command Test-WindowTestsAllowed).Parameters.Keys
+        $params | Should -Not -Contain 'ComputerName'
+        $params | Should -Contain 'OptIn'
+        (Test-WindowTestsAllowed -OptIn '1').Allowed | Should -BeTrue
+        (Test-WindowTestsAllowed -OptIn '').Allowed | Should -BeFalse
+    }
+
     It 'refuses on AYW even with the opt-in' {
         $r = Get-Guard 'AYW' '1'
         $r.Allowed | Should -BeFalse
