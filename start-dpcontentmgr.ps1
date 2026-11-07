@@ -18,8 +18,8 @@
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
-    Version    : 2026.10.12.0012
-    Updated    : 2026-09-21
+    Version    : 2026.11.06.0013
+    Updated    : 2026-11-06
 #>
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '', Justification='Per feedback_ps_wpf_handler_rules.md and PS51-WPF-001..003: $global: survives closure scope-strip.')]
@@ -239,25 +239,6 @@ $script:ContentRows       = @()
 $script:StatusIssueRows   = @()
 $script:LastRefreshTime   = $null
 $script:IsConnectedFromBg = $false
-
-# === Glyphs ===
-function Get-RollupGlyph {
-    param([int]$Failed, [int]$InProgress, [int]$Total)
-    if ($Total -eq 0)        { return [char]0x22EF }
-    if ($Failed -gt 0)       { return [char]0x2717 }
-    if ($InProgress -gt 0)   { return [char]0x22EF }
-    return [char]0x2713
-}
-function Get-StatusRowGlyph {
-    param([int]$State)
-    switch ($State) {
-        0 { return [char]0x2713 }
-        8 { return [char]0x2713 }
-        3 { return [char]0x2717 }
-        6 { return [char]0x2717 }
-        default { return [char]0x22EF }
-    }
-}
 
 # === Action bar visibility ===
 function Update-ActionBarVisibility {
@@ -527,84 +508,9 @@ function Invoke-Refresh {
             $script:RawStatus  = @($r.Status)
             $script:LastRefreshTime = Get-Date
 
-            # DP rows: join byDP + raw DP info + storage
-            $byDPLookup = @{}
-            foreach ($d in @($r.ByDP)) { $byDPLookup[[string]$d.DPName] = $d }
-            $storLookup = @{}
-            foreach ($s in @($r.StorageByDP)) { $storLookup[[string]$s.DPName] = $s }
-
-            $script:DPRows = @($script:RawDPs | ForEach-Object {
-                $name = [string]$_.ServerName
-                $stat = $byDPLookup[$name]
-                $stor = $storLookup[$name]
-                $total      = if ($stat) { [int]$stat.TotalContent }    else { 0 }
-                $installed  = if ($stat) { [int]$stat.InstalledCount }  else { 0 }
-                $inProgress = if ($stat) { [int]$stat.InProgressCount } else { 0 }
-                $failed     = if ($stat) { [int]$stat.FailedCount }     else { 0 }
-                $pct        = if ($stat) { [string]$stat.PctComplete }  else { '0%' }
-                $sizeGB     = if ($stor) { [decimal]$stor.TotalSizeGB } else { 0 }
-                [PSCustomObject]@{
-                    StatusGlyph     = Get-RollupGlyph -Failed $failed -InProgress $inProgress -Total $total
-                    ServerName      = $name
-                    SiteCode        = $_.SiteCode
-                    IsPullDP        = $_.IsPullDP
-                    TotalContent    = $total
-                    InstalledCount  = $installed
-                    InProgressCount = $inProgress
-                    FailedCount     = $failed
-                    PctComplete     = $pct
-                    TotalSizeGB     = $sizeGB
-                }
-            })
-
-            # Content rows: join byContent + raw content
-            $byContentLookup = @{}
-            foreach ($c in @($r.ByContent)) { $byContentLookup[[string]$c.PackageID] = $c }
-            $script:ContentRows = @($script:RawContent | ForEach-Object {
-                $packageId = [string]$_.PackageID
-                $stat = $byContentLookup[$packageId]
-                $total      = if ($stat) { [int]$stat.TotalDPs }        else { 0 }
-                $installed  = if ($stat) { [int]$stat.InstalledCount }  else { 0 }
-                $inProgress = if ($stat) { [int]$stat.InProgressCount } else { 0 }
-                $failed     = if ($stat) { [int]$stat.FailedCount }     else { 0 }
-                $pct        = if ($stat) { [string]$stat.PctComplete }  else { '0%' }
-                $sizeKB = [int]$_.SourceSize
-                $sizeStr = if ($sizeKB -ge 1048576) { ('{0:N2} GB' -f ($sizeKB / 1048576)) }
-                          elseif ($sizeKB -ge 1024) { ('{0:N1} MB' -f ($sizeKB / 1024)) }
-                          else { ('{0} KB' -f $sizeKB) }
-                [PSCustomObject]@{
-                    StatusGlyph     = Get-RollupGlyph -Failed $failed -InProgress $inProgress -Total $total
-                    Name            = $_.ContentName
-                    ContentType     = $_.ContentType
-                    PackageID       = $_.PackageID
-                    SizeDisplay     = $sizeStr
-                    SourceSize      = $sizeKB
-                    TotalDPs        = $total
-                    InstalledCount  = $installed
-                    InProgressCount = $inProgress
-                    FailedCount     = $failed
-                    PctComplete     = $pct
-                }
-            })
-
-            # Status Issues: every status row in non-OK state
-            $contentNameLookup = @{}
-            foreach ($c in $script:RawContent) { $contentNameLookup[[string]$c.PackageID] = $c }
-            $script:StatusIssueRows = @($script:RawStatus | Where-Object { [int]$_.State -notin 0,8 } | ForEach-Object {
-                $packageId = [string]$_.PackageID
-                $cInfo = $contentNameLookup[$packageId]
-                [PSCustomObject]@{
-                    StatusGlyph = Get-StatusRowGlyph -State ([int]$_.State)
-                    DPName      = $_.DPName
-                    ContentName = if ($cInfo) { $cInfo.ContentName } else { '(unknown / orphaned)' }
-                    ContentType = if ($cInfo) { $cInfo.ContentType } else { '?' }
-                    State       = $_.State
-                    StatusName  = $_.StatusName
-                    PackageID   = $packageId
-                    LastUpdate  = $_.LastUpdate
-                }
-            })
-
+            $script:DPRows          = @(ConvertTo-DPRows -DPs $script:RawDPs -ByDP $r.ByDP -StorageByDP $r.StorageByDP)
+            $script:ContentRows     = @(ConvertTo-ContentRows -Content $script:RawContent -ByContent $r.ByContent)
+            $script:StatusIssueRows = @(ConvertTo-StatusIssueRows -Status $script:RawStatus -Content $script:RawContent)
             $gridDPs.ItemsSource = $script:DPRows
             $gridContent.ItemsSource = $script:ContentRows
             $gridStatusIssues.ItemsSource = $script:StatusIssueRows
@@ -812,7 +718,7 @@ $btnRedistribute.Add_Click({
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Redistribute Failed: refresh first to establish a CM connection.'; return }
     $ops = Get-FailedOpsForContent -ContentSelection $sel
     if (Show-BulkOpDialog -Title 'Redistribute Failed Content' -ActionVerb 'Redistribute' -Operations $ops -ActionScript {
-        param($op) Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName
+        param($op) Assert-ContentActionResult -Result (Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
 
@@ -822,7 +728,7 @@ $btnRemoveFromDP.Add_Click({
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove from DP: refresh first to establish a CM connection.'; return }
     $ops = Get-OpsForContentToAllDPs -ContentSelection $sel
     if (Show-BulkOpDialog -Title 'Remove Content from DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
-        param($op) Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName
+        param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
 
@@ -832,7 +738,7 @@ $btnValidate.Add_Click({
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Validate: refresh first to establish a CM connection.'; return }
     $ops = Get-OpsForContentToAllDPs -ContentSelection $sel
     if (Show-BulkOpDialog -Title 'Validate Content on DPs' -ActionVerb 'Validate' -Operations $ops -ActionScript {
-        param($op) Invoke-ContentValidation -PackageID $op.PackageID -DPName $op.DPName
+        param($op) Assert-ContentActionResult -Result (Invoke-ContentValidation -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
 
@@ -842,7 +748,7 @@ $btnRedistributeIssues.Add_Click({
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Redistribute: refresh first.'; return }
     $ops = @($sel | ForEach-Object { [PSCustomObject]@{ DPName = $_.DPName; PackageID = $_.PackageID; ContentName = $_.ContentName } })
     if (Show-BulkOpDialog -Title 'Redistribute Selected Issues' -ActionVerb 'Redistribute' -Operations $ops -ActionScript {
-        param($op) Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName
+        param($op) Assert-ContentActionResult -Result (Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
 
@@ -852,7 +758,7 @@ $btnRemoveIssues.Add_Click({
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove: refresh first.'; return }
     $ops = @($sel | ForEach-Object { [PSCustomObject]@{ DPName = $_.DPName; PackageID = $_.PackageID; ContentName = $_.ContentName } })
     if (Show-BulkOpDialog -Title 'Remove Failures' -ActionVerb 'Remove' -Operations $ops -ActionScript {
-        param($op) Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName
+        param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
 

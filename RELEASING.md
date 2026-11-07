@@ -2,12 +2,18 @@
 
 ## 1. Test
 
-Run the full suite under Windows PowerShell 5.1 with Pester 5. The release stops if a test fails. Never run the suite under PowerShell 7.
+Run the checks under Windows PowerShell 5.1 and under PowerShell 7. The release stops if the lint, a test or the coverage floor fails. Window tests open windows off screen and need a desktop session.
 
 ```powershell
-powershell -NoProfile -Command "Import-Module Pester -MinimumVersion 5.0; $r = Invoke-Pester -Path Module -PassThru -Output None; 'passed {0} failed {1}' -f $r.PassedCount, $r.FailedCount"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Invoke-Checks.ps1
+pwsh -NoProfile -File .\Invoke-Checks.ps1
 ```
 
+When the release changes a write action (redistribute, remove, validate), also run the lab test on CM01. It creates one `ZZTEST-` package, runs the actions, removes it, and checks that no other package changed. See `Tests/TESTPLAN.md`.
+
+```powershell
+pwsh -NoProfile -File .\Tests\Lab\Invoke-DPContentLab.ps1
+```
 ## 2. Version
 
 The version is `YYYY.MM.DD.BBBB`: the release date, then a four-digit, zero-padded build number. The build number increases by 1 for each release and never resets. Build 0007 is the first release with this scheme; the 6 releases before it used `1.x.y` numbers. Keep the zero-padded text everywhere; `[version]` drops the leading zeros.
@@ -30,11 +36,11 @@ C:\projects\app-packager-suite\sync-suitecommon.ps1 -Consumer C:\projects\dp-con
 
 ## 4. Commit, tag, and package
 
-Commit to `main`. Every commit to `main` is part of a release: the suite installer build refuses a component whose `main` is ahead of its latest tag. Tag the commit `v<ver>` with an annotated tag. Build the zip from the tag. The zip excludes the tests and this file.
+Commit to `main`. Every commit to `main` is part of a release: the suite installer build refuses a component whose `main` is ahead of its latest tag. Tag the commit `v<ver>` with an annotated tag. Build the zip from the tag. The zip excludes the tests, the check script, the workflows and this file.
 
 ```bash
 git tag -a v<ver> -m v<ver>
-git archive --format=zip -o DPContentManager-<ver>.zip v<ver> -- . ':(exclude)Tests' ':(exclude)*.Tests.ps1' ':(exclude)RELEASING.md'
+git archive --format=zip -o DPContentManager-<ver>.zip v<ver> -- . ':(exclude)Tests' ':(exclude)*.Tests.ps1' ':(exclude)RELEASING.md' ':(exclude)Invoke-Checks.ps1' ':(exclude).github'
 sha256sum DPContentManager-<ver>.zip | sed 's/ \*/  /' > checksums.txt
 ```
 
