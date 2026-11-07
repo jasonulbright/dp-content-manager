@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026.11.06.0013] - 2026-11-06
+
+## 6 fixes in the distribution actions and status views
+
+### Fixed
+
+- Fix Validate: the validate action called Invoke-CMContentValidation with a parameter that the cmdlet does not have, so every validation failed. It now uses -PackageId.
+- Report a failed action in the operation dialog. A DP that the action could not reach showed OK. The dialog now shows FAIL and the error text.
+- Redistribute only the DP that you pick. The query matched part of a name, so DP1 also refreshed DP10 and DP11. The name now matches the server name exactly, or as the short name of a fully qualified name.
+- Show the DP name in the DPs view. The grid read a property that the DP query did not return, so the name column was empty and no rollup joined to it.
+- Refresh a site with no distributed content without an error. The rollup functions rejected an empty status list.
+- Escape a quote and a backslash in the package ID of the redistribute query.
+
+### Added
+
+- Support -WhatIf and -Confirm in Invoke-RedistributeContent, Remove-ContentFromDP and Invoke-ContentValidation.
 ## [2026.10.12.0012] - 2026-10-12
 
 ## 1 PowerShell 7 fix

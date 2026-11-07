@@ -52,6 +52,7 @@ function Get-AllDistributionPoints {
 
         [PSCustomObject]@{
             Name      = $serverName
+            ServerName = $serverName
             SiteCode  = $dp.SiteCode
             IsPullDP  = [bool]$dp.IsPullDP
             NALPath   = $dp.NALPath
@@ -358,7 +359,7 @@ function ConvertTo-ContentStatusSummary {
         Uses hashtable-based O(n) aggregation for performance at scale.
     #>
     param(
-        [Parameter(Mandatory)][PSCustomObject[]]$StatusRows
+        [Parameter(Mandatory)][AllowEmptyCollection()][PSCustomObject[]]$StatusRows
     )
 
     $byPackage = @{}
@@ -405,7 +406,7 @@ function ConvertTo-DPStatusSummary {
         Uses hashtable-based O(n) aggregation for performance at scale.
     #>
     param(
-        [Parameter(Mandatory)][PSCustomObject[]]$StatusRows
+        [Parameter(Mandatory)][AllowEmptyCollection()][PSCustomObject[]]$StatusRows
     )
 
     $byDP = @{}
@@ -453,6 +454,14 @@ function Invoke-RedistributeContent {
     .SYNOPSIS
         Redistributes content to specified distribution points.
 
+    .DESCRIPTION
+        Sets RefreshNow on the SMS_DistributionPoint instance of each named DP.
+        A DP name matches its server name exactly, or as the short name of a
+        fully qualified server name. 'dp1' never matches 'dp10'. Returns one
+        result per DP (PackageID, DPName, Success, Error); a failure on one DP
+        does not stop the others. Under -WhatIf it changes nothing and returns
+        no result.
+
     .PARAMETER PackageID
         The content package ID to redistribute.
 
@@ -462,6 +471,7 @@ function Invoke-RedistributeContent {
     .PARAMETER ProgressCallback
         Optional scriptblock called with (currentIndex, totalCount, dpName) for progress reporting.
     #>
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)][string]$PackageID,
         [Parameter(Mandatory)][string[]]$DPName,
@@ -482,12 +492,23 @@ function Invoke-RedistributeContent {
             # WMI RefreshNow triggers redistribution (same mechanism as the CM console)
             # Start-CMContentDistribution is for initial distribution only and fails on existing DPs
             $ns = "root\SMS\site_$($conn.SiteCode)"
-            $wmiQuery = "SELECT * FROM SMS_DistributionPoint WHERE PackageID = '$PackageID' AND ServerNALPath LIKE '%$dp%'"
-            $dpInst = Get-CimInstance -Namespace $ns -Query $wmiQuery -ComputerName $conn.SMSProvider -ErrorAction Stop
-            if ($dpInst) {
-                $dpInst | Set-CimInstance -Property @{ RefreshNow = $true } -ErrorAction Stop
-                Write-Log "Redistributed $PackageID to $dp"
-                $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+            # WQL escapes a backslash and a quote with a backslash.
+            $pkgLiteral = $PackageID.Replace('\', '\\').Replace("'", "\'")
+            $wmiQuery = "SELECT * FROM SMS_DistributionPoint WHERE PackageID = '$pkgLiteral'"
+            $candidates = @(Get-CimInstance -Namespace $ns -Query $wmiQuery -ComputerName $conn.SMSProvider -ErrorAction Stop)
+            # Match the server name on the client. A LIKE '%dp1%' query also matches dp10 and dp11.
+            $dpInst = @($candidates | Where-Object {
+                $server = if ([string]$_.ServerNALPath -match '\\\\([^\\]+)\\') { $Matches[1] } else { '' }
+                $server -ieq $dp -or $server.StartsWith("$dp.", [System.StringComparison]::OrdinalIgnoreCase)
+            })
+            if ($dpInst.Count -gt 0) {
+                if ($PSCmdlet.ShouldProcess("$PackageID on $dp", 'Redistribute content')) {
+                    foreach ($inst in $dpInst) {
+                        Set-CimInstance -InputObject $inst -Property @{ RefreshNow = $true } -ErrorAction Stop
+                    }
+                    Write-Log "Redistributed $PackageID to $dp"
+                    $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+                }
             } else {
                 Write-Log "No SMS_DistributionPoint instance found for $PackageID on $dp" -Level WARN
                 $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $false; Error = 'DP instance not found' }
@@ -507,6 +528,7 @@ function Remove-ContentFromDP {
     .SYNOPSIS
         Removes content from specified distribution points.
     #>
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)][string]$PackageID,
         [Parameter(Mandatory)][string[]]$DPName,
@@ -521,9 +543,11 @@ function Remove-ContentFromDP {
         if ($ProgressCallback) { & $ProgressCallback $i $total $dp }
 
         try {
+            if ($PSCmdlet.ShouldProcess("$PackageID on $dp", 'Remove content from DP')) {
             Remove-CMContentDistribution -PackageId $PackageID -DistributionPointName $dp -Force -ErrorAction Stop
             Write-Log "Removed $PackageID from $dp"
             $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+            }
         }
         catch {
             Write-Log "Failed to remove $PackageID from $dp : $_" -Level ERROR
@@ -543,6 +567,7 @@ function Invoke-ContentValidation {
         Content validation is server-side and asynchronous. Results will appear
         in the next status refresh.
     #>
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)][string]$PackageID,
         [Parameter(Mandatory)][string[]]$DPName,
@@ -557,9 +582,11 @@ function Invoke-ContentValidation {
         if ($ProgressCallback) { & $ProgressCallback $i $total $dp }
 
         try {
-            Invoke-CMContentValidation -Id $PackageID -DistributionPointName $dp -ErrorAction Stop
+            if ($PSCmdlet.ShouldProcess("$PackageID on $dp", 'Validate content on DP')) {
+            Invoke-CMContentValidation -PackageId $PackageID -DistributionPointName $dp -ErrorAction Stop
             Write-Log "Validation initiated for $PackageID on $dp"
             $results += [PSCustomObject]@{ PackageID = $PackageID; DPName = $dp; Success = $true; Error = '' }
+            }
         }
         catch {
             Write-Log "Failed to validate $PackageID on $dp : $_" -Level ERROR
@@ -568,6 +595,34 @@ function Invoke-ContentValidation {
     }
 
     return $results
+}
+
+function Assert-ContentActionResult {
+    <#
+    .SYNOPSIS
+        Throws when any result of a content action reports Success = $false.
+
+    .DESCRIPTION
+        Invoke-RedistributeContent, Remove-ContentFromDP and Invoke-ContentValidation
+        report a failure in the result object and do not throw. A caller that treats
+        "did not throw" as success (the bulk operation dialog) passes the result
+        through this function. The message lists each failed DP and its error.
+        A null or empty result passes: a -WhatIf run returns no result.
+    #>
+    param(
+        [Parameter(ValueFromPipeline)][AllowNull()][AllowEmptyCollection()]$Result
+    )
+    begin { $failed = @() }
+    process {
+        foreach ($r in @($Result)) {
+            if ($r -and $r.PSObject.Properties['Success'] -and -not $r.Success) { $failed += $r }
+        }
+    }
+    end {
+        if ($failed.Count -gt 0) {
+            throw (($failed | ForEach-Object { '{0}: {1}' -f $_.DPName, $_.Error }) -join '; ')
+        }
+    }
 }
 
 function Find-OrphanedContent {
@@ -627,8 +682,8 @@ function Get-DPStorageAnalysis {
         Returns results sorted by total size descending.
     #>
     param(
-        [Parameter(Mandatory)][PSCustomObject[]]$StatusRows,
-        [Parameter(Mandatory)][PSCustomObject[]]$ContentObjects
+        [Parameter(Mandatory)][AllowEmptyCollection()][PSCustomObject[]]$StatusRows,
+        [Parameter(Mandatory)][AllowEmptyCollection()][PSCustomObject[]]$ContentObjects
     )
 
     $sizeLookup = @{}
@@ -793,4 +848,155 @@ function New-ContentStatusSummary {
     }
 
     return ($lines -join "`r`n")
+}
+
+# ---------------------------------------------------------------------------
+# Row shaping for the main window
+# ---------------------------------------------------------------------------
+
+function Get-RollupGlyph {
+    <#
+    .SYNOPSIS
+        Returns the status glyph of a rollup: failed, in progress or complete.
+    #>
+    param([int]$Failed, [int]$InProgress, [int]$Total)
+    if ($Total -eq 0)        { return [char]0x22EF }
+    if ($Failed -gt 0)       { return [char]0x2717 }
+    if ($InProgress -gt 0)   { return [char]0x22EF }
+    return [char]0x2713
+}
+
+function Get-StatusRowGlyph {
+    <#
+    .SYNOPSIS
+        Returns the status glyph of one distribution status state.
+    #>
+    param([int]$State)
+    switch ($State) {
+        0 { return [char]0x2713 }
+        8 { return [char]0x2713 }
+        3 { return [char]0x2717 }
+        6 { return [char]0x2717 }
+        default { return [char]0x22EF }
+    }
+}
+
+function Format-ContentSize {
+    <#
+    .SYNOPSIS
+        Formats a size in KB as KB, MB or GB text.
+    #>
+    param([double]$SizeKB)
+    if ($SizeKB -ge 1048576) { return ('{0:N2} GB' -f ($SizeKB / 1048576)) }
+    if ($SizeKB -ge 1024)    { return ('{0:N1} MB' -f ($SizeKB / 1024)) }
+    return ('{0} KB' -f [long]$SizeKB)
+}
+
+function ConvertTo-DPRows {
+    <#
+    .SYNOPSIS
+        Joins the DP list with the per-DP status and storage rollups into grid rows.
+    #>
+    param(
+        [AllowNull()][AllowEmptyCollection()]$DPs,
+        [AllowNull()][AllowEmptyCollection()]$ByDP,
+        [AllowNull()][AllowEmptyCollection()]$StorageByDP
+    )
+    $byDPLookup = @{}
+    foreach ($d in @($ByDP)) { if ($d) { $byDPLookup[[string]$d.DPName] = $d } }
+    $storLookup = @{}
+    foreach ($s in @($StorageByDP)) { if ($s) { $storLookup[[string]$s.DPName] = $s } }
+
+    @(foreach ($dp in @($DPs)) {
+        if (-not $dp) { continue }
+        $name = [string]$dp.ServerName
+        $stat = $byDPLookup[$name]
+        $stor = $storLookup[$name]
+        $total      = if ($stat) { [int]$stat.TotalContent }    else { 0 }
+        $installed  = if ($stat) { [int]$stat.InstalledCount }  else { 0 }
+        $inProgress = if ($stat) { [int]$stat.InProgressCount } else { 0 }
+        $failed     = if ($stat) { [int]$stat.FailedCount }     else { 0 }
+        $pct        = if ($stat) { [string]$stat.PctComplete }  else { '0%' }
+        $sizeGB     = if ($stor) { [decimal]$stor.TotalSizeGB } else { 0 }
+        [PSCustomObject]@{
+            StatusGlyph     = Get-RollupGlyph -Failed $failed -InProgress $inProgress -Total $total
+            ServerName      = $name
+            SiteCode        = $dp.SiteCode
+            IsPullDP        = $dp.IsPullDP
+            TotalContent    = $total
+            InstalledCount  = $installed
+            InProgressCount = $inProgress
+            FailedCount     = $failed
+            PctComplete     = $pct
+            TotalSizeGB     = $sizeGB
+        }
+    })
+}
+
+function ConvertTo-ContentRows {
+    <#
+    .SYNOPSIS
+        Joins the content list with the per-content status rollup into grid rows.
+    #>
+    param(
+        [AllowNull()][AllowEmptyCollection()]$Content,
+        [AllowNull()][AllowEmptyCollection()]$ByContent
+    )
+    $byContentLookup = @{}
+    foreach ($c in @($ByContent)) { if ($c) { $byContentLookup[[string]$c.PackageID] = $c } }
+
+    @(foreach ($item in @($Content)) {
+        if (-not $item) { continue }
+        $packageId = [string]$item.PackageID
+        $stat = $byContentLookup[$packageId]
+        $total      = if ($stat) { [int]$stat.TotalDPs }        else { 0 }
+        $installed  = if ($stat) { [int]$stat.InstalledCount }  else { 0 }
+        $inProgress = if ($stat) { [int]$stat.InProgressCount } else { 0 }
+        $failed     = if ($stat) { [int]$stat.FailedCount }     else { 0 }
+        $pct        = if ($stat) { [string]$stat.PctComplete }  else { '0%' }
+        $sizeKB = [long]$item.SourceSize
+        [PSCustomObject]@{
+            StatusGlyph     = Get-RollupGlyph -Failed $failed -InProgress $inProgress -Total $total
+            Name            = $item.ContentName
+            ContentType     = $item.ContentType
+            PackageID       = $item.PackageID
+            SizeDisplay     = Format-ContentSize -SizeKB $sizeKB
+            SourceSize      = $sizeKB
+            TotalDPs        = $total
+            InstalledCount  = $installed
+            InProgressCount = $inProgress
+            FailedCount     = $failed
+            PctComplete     = $pct
+        }
+    })
+}
+
+function ConvertTo-StatusIssueRows {
+    <#
+    .SYNOPSIS
+        Returns one grid row for every status row that is not installed or valid.
+    #>
+    param(
+        [AllowNull()][AllowEmptyCollection()]$Status,
+        [AllowNull()][AllowEmptyCollection()]$Content
+    )
+    $contentLookup = @{}
+    foreach ($c in @($Content)) { if ($c) { $contentLookup[[string]$c.PackageID] = $c } }
+
+    @(foreach ($row in @($Status)) {
+        if (-not $row) { continue }
+        if ([int]$row.State -in 0, 8) { continue }
+        $packageId = [string]$row.PackageID
+        $info = $contentLookup[$packageId]
+        [PSCustomObject]@{
+            StatusGlyph = Get-StatusRowGlyph -State ([int]$row.State)
+            DPName      = $row.DPName
+            ContentName = if ($info) { $info.ContentName } else { '(unknown / orphaned)' }
+            ContentType = if ($info) { $info.ContentType } else { '?' }
+            State       = $row.State
+            StatusName  = $row.StatusName
+            PackageID   = $packageId
+            LastUpdate  = $row.LastUpdate
+        }
+    })
 }
