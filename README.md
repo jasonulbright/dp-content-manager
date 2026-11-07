@@ -9,6 +9,10 @@ Manage Configuration Manager distribution point content at scale: per-DP and per
 
 ![DP Content Manager](screenshot.png)
 
+## User guide
+
+The [user guide](docs/index.md) walks every view, dialog and setting with images of the running window. [Capture the images again](docs/reference/capture-images.md) shows the one command that regenerates them.
+
 ## Requirements
 
 - Windows 10 / 11 or Server 2016+

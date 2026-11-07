@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026.11.07.0014] - 2026-11-07
+
+## 2 fixes and a user guide
+
+### Fixed
+
+- Fix the crash of Validate, Remove from DP and Redistribute Failed on content that has no DP status rows. The empty list became $null, the dialog refused it and the window closed. The log now says that no matching operations exist.
+- Show the description of the DPs view in the page header at the start. The header kept the hint to configure the site and click Refresh after the connection.
+
+### Added
+
+- Add the user guide (docs/index.md) with images of the running window.
+- Add tools/guide-capture, one command that regenerates every image of the guide on a lab computer.
+
 ## [2026.11.06.0013] - 2026-11-06
 
 ## 6 fixes in the distribution actions and status views
