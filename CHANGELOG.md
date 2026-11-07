@@ -1,4 +1,13 @@
-# Changelog
+﻿# Changelog
+
+## [2026.11.07.0016] - 2026-11-07
+
+## 1 window-test guard that decides on one opt-in
+
+### Changed
+
+- Run window tests only when the SUITE_ALLOW_WINDOW_TESTS opt-in is set.
+- Remove the computer check from the window-test guard.
 
 ## [2026.11.07.0015] - 2026-11-07
 
@@ -6,7 +15,7 @@
 
 ### Added
 
-- Add a guard for the window tests. They open a window only when SUITE_ALLOW_WINDOW_TESTS is 1 and never on the dev PC. Elsewhere they report Skipped with the reason. The CI workflow sets the variable.
+- Add a guard for the window tests. They open a window only when SUITE_ALLOW_WINDOW_TESTS is 1. Otherwise they report Skipped with the reason. The CI workflow sets the variable.
 - Add WindowGuard.Tests.ps1, which tests the guard and checks that every test file that can open a window carries it.
 - Print one line in Invoke-Checks.ps1 when the window tests are skipped.
 

@@ -1,7 +1,6 @@
 #Requires -Modules Pester
 # Tests of the window-test guard (Test-WindowTestsAllowed in WindowHarness.ps1).
-# The guard keeps window tests off the dev PC (AYW) and runs them only when
-# SUITE_ALLOW_WINDOW_TESTS is 1. This file injects the computer name and the
+# The guard runs window tests only when SUITE_ALLOW_WINDOW_TESTS is 1. This file injects the
 # opt-in value, so it never reads the real environment and never opens a window.
 
 BeforeDiscovery {
@@ -13,8 +12,7 @@ BeforeDiscovery {
 
 BeforeAll {
     . "$PSScriptRoot\WindowHarness.ps1"
-    # Pass the computer name as a variable, so the linter rule against a hard-coded ComputerName stays quiet.
-    function Get-Guard { param([string]$Computer, $Value) Test-WindowTestsAllowed -ComputerName $Computer -OptIn $Value }
+    function Get-Guard { param($Value) Test-WindowTestsAllowed -OptIn $Value }
 }
 
 Describe 'Test-WindowTestsAllowed' {
@@ -26,43 +24,21 @@ Describe 'Test-WindowTestsAllowed' {
         (Test-WindowTestsAllowed -OptIn '').Allowed | Should -BeFalse
     }
 
-    It 'refuses on AYW even with the opt-in' {
-        $r = Get-Guard 'AYW' '1'
-        $r.Allowed | Should -BeFalse
-        $r.Reason | Should -Match 'AYW'
-    }
-
-    It 'refuses on ayw in lower case' {
-        (Get-Guard 'ayw' '1').Allowed | Should -BeFalse
-    }
-
-    It 'refuses on AYW without the opt-in' {
-        (Get-Guard 'AYW' '').Allowed | Should -BeFalse
-    }
-
-    It 'allows another computer with the opt-in 1' {
-        $r = Get-Guard 'CM01' '1'
+    It 'allows the opt-in 1' {
+        $r = Get-Guard '1'
         $r.Allowed | Should -BeTrue
         $r.Reason | Should -BeNullOrEmpty
     }
 
-    It 'refuses another computer when the opt-in is <Label>, and names the opt-in' -ForEach @(
+    It 'refuses when the opt-in is <Label>, and names the opt-in' -ForEach @(
         @{ Label = 'empty'; Value = '' }
         @{ Label = 'null'; Value = $null }
         @{ Label = '0'; Value = '0' }
         @{ Label = 'true'; Value = 'true' }
     ) {
-        $r = Get-Guard 'CLIENT01' $Value
+        $r = Get-Guard $Value
         $r.Allowed | Should -BeFalse
-        $r.Reason | Should -Match 'SUITE_ALLOW_WINDOW_TESTS'
-    }
-
-    It 'gives a reason whenever it refuses (<Name>, opt-in "<Value>")' -ForEach @(
-        @{ Name = 'AYW'; Value = '1' }
-        @{ Name = 'CM01'; Value = '' }
-        @{ Name = 'CM01'; Value = '0' }
-    ) {
-        (Get-Guard $Name $Value).Reason | Should -Not -BeNullOrEmpty
+        $r.Reason | Should -Be 'SUITE_ALLOW_WINDOW_TESTS is not 1'
     }
 }
 

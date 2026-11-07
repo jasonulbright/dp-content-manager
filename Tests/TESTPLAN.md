@@ -10,7 +10,7 @@ Measured 2026-11-06 with `Invoke-Checks.ps1` (Pester 5.7.1, PSScriptAnalyzer 1.2
 
 Run: `.\Invoke-Checks.ps1` (lint, tests, coverage floor 80%). It runs in CI on both hosts (`.github/workflows/checks.yml`).
 
-Window tests: `Window.Tests.ps1` opens windows only when `SUITE_ALLOW_WINDOW_TESTS` is `1`, and never on the dev PC (computer name `AYW`). Otherwise Pester reports those tests as Skipped with the reason, not as Failed. `Test-WindowTestsAllowed` in `Tests/WindowHarness.ps1` makes the decision, and `Get-WpfSession` refuses to create a runspace when it says no. The CI workflow sets the variable in both jobs. `Invoke-Checks.ps1` prints one line when it skips them, and the run still passes. The coverage floor stays in force: the window tests run no module code, so skipping them does not lower the module coverage. `WindowGuard.Tests.ps1` tests the guard with injected values and checks that every test file that can open a window carries it. It opens no window.
+Window tests: `Window.Tests.ps1` opens windows only when `SUITE_ALLOW_WINDOW_TESTS` is `1`. The CI workflow and the lab run scripts set it. Otherwise Pester reports those tests as Skipped with that reason, not as Failed. `Test-WindowTestsAllowed` in `Tests/WindowHarness.ps1` makes the decision, and `Get-WpfSession` refuses to create a runspace when it says no. `Invoke-Checks.ps1` prints one line when it skips them, and the run still passes. The coverage floor stays in force: the window tests run no module code, so skipping them does not lower the module coverage. `WindowGuard.Tests.ps1` tests the guard with injected opt-in values and checks that every test file that can open a window carries it. It opens no window.
 
 ## What is covered
 
@@ -25,7 +25,7 @@ Window tests: `Window.Tests.ps1` opens windows only when `SUITE_ALLOW_WINDOW_TES
 | Start without the console | `Startup.Tests.ps1` | Plain message, `$false`, no raw exception |
 | Windows | `Window.Tests.ps1` | Main window and both dialogs: every named control, titles, no clipped text and nothing off screen at 1024x720 and 1440x900 in both themes and all three views, text contrast, control contrast |
 | Real cmdlet signatures | `CmCmdlet.Contract.Tests.ps1` | Every ConfigMgr call, with the keys of a splatted hashtable, names only parameters that the real cmdlet has. Runs where the console is installed |
-| Lab | `Lab/Invoke-DPContentLab.ps1` | Creates one `ZZTEST-` package on CM01, distributes it, redistributes (full name, short name, prefix), validates, removes under `-WhatIf` and for real, removes the package, checks that no other package changed |
+| Lab | `Lab/Invoke-DPContentLab.ps1` | Creates one `ZZTEST-` package on a lab machine, distributes it, redistributes (full name, short name, prefix), validates, removes under `-WhatIf` and for real, removes the package, checks that no other package changed |
 
 ## Defects found
 
