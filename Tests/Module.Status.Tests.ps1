@@ -4,7 +4,7 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
+    Import-AppModule
     Mock Write-Log {} -ModuleName DPContentMgrCommon
 }
 

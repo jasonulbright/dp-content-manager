@@ -4,7 +4,7 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
+    Import-AppModule
     $script:Stubs = New-CmStub -Name Remove-CMContentDistribution, Invoke-CMContentValidation -Definition {
         [CmdletBinding()]
         param([string]$PackageId, [string]$DistributionPointName, [switch]$Force)

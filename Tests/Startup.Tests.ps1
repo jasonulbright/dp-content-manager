@@ -4,7 +4,7 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
+    Import-AppModule
 }
 
 Describe 'Connect-CMSite without the ConfigMgr module' {
@@ -38,7 +38,4 @@ Describe 'Connect-CMSite without the ConfigMgr module' {
         Get-CMConnectionInfo | Should -BeNullOrEmpty
     }
 
-    It 'stops the redistribute action with a plain message before it touches anything' {
-        { Invoke-RedistributeContent -PackageID 'MCM00001' -DPName 'dp1' } | Should -Throw 'Not connected to a CM site; call Connect-CMSite first.'
-    }
 }

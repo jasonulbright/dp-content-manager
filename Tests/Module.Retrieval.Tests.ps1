@@ -5,7 +5,7 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
+    Import-AppModule
     $script:Stubs = New-CmStub -Name Get-CMDistributionPoint, Get-CMApplication, Get-CMPackage,
         Get-CMSoftwareUpdateDeploymentPackage, Get-CMBootImage, Get-CMOperatingSystemImage,
         Get-CMDriverPackage, Get-CMTaskSequence, Get-CMDistributionStatus

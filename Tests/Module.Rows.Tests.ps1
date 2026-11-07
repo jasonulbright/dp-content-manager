@@ -3,8 +3,13 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
+    Import-AppModule
+    # The size text uses the current culture (1,024.0 MB). Fix the culture so the test gives one result on every host.
+    $script:OldCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
+    [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
 }
+
+AfterAll { [System.Threading.Thread]::CurrentThread.CurrentCulture = $script:OldCulture }
 
 Describe 'Get-RollupGlyph' {
     It 'returns <Glyph> for failed=<Failed> in-progress=<InProgress> total=<Total>' -ForEach @(

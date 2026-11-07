@@ -5,8 +5,8 @@
 
 BeforeAll {
     . "$PSScriptRoot\TestHelpers.ps1"
-    Import-DpcmModule
-    $script:ShellPath = Join-Path $script:DpcmRoot 'start-dpcontentmgr.ps1'
+    Import-AppModule
+    $script:ShellPath = Join-Path $script:AppRoot 'start-dpcontentmgr.ps1'
     $script:Ast = [System.Management.Automation.Language.Parser]::ParseFile($script:ShellPath, [ref]$null, [ref]$null)
 
     $wanted = 'Get-FailedOpsForContent', 'Get-OpsForContentToAllDPs', 'Get-StatusFilterValue', 'Update-Filter',
@@ -328,7 +328,7 @@ Describe 'Script contract' {
         $own = @($script:Ast.FindAll({ param($x) $x -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true) | ForEach-Object Name)
         $called = @($script:Ast.FindAll({ param($x) $x -is [System.Management.Automation.Language.CommandAst] }, $true) |
                 ForEach-Object { $_.GetCommandName() } | Where-Object { $_ } | Sort-Object -Unique)
-        Import-Module (Join-Path $script:DpcmRoot 'Lib\SuiteCommon\SuiteCommon.psd1') -Global -DisableNameChecking -ErrorAction SilentlyContinue
+        Import-Module (Join-Path $script:AppRoot 'Lib\SuiteCommon\SuiteCommon.psd1') -Global -DisableNameChecking -ErrorAction SilentlyContinue
         $missing = @($called | Where-Object { $_ -notin $own -and -not (Get-Command $_ -ErrorAction SilentlyContinue) })
         # ConfigMgr cmdlets and Windows PowerShell 5.1-only commands are not on every machine.
         $missing | Where-Object { $_ -notmatch '^(Get|Set|New|Remove|Start|Invoke)-CM' } | Should -BeNullOrEmpty

@@ -69,8 +69,12 @@ try {
     Add-Result 'redistribute by full name' ([bool]$r[0].Success) $r[0].Error
     $r = @(Invoke-RedistributeContent -PackageID $pkgId -DPName $DPName.Split('.')[0])
     Add-Result 'redistribute by short name' ([bool]$r[0].Success) $r[0].Error
-    $r = @(Invoke-RedistributeContent -PackageID $pkgId -DPName ($DPName.Split('.')[0].Substring(0, 2)))
-    Add-Result 'redistribute by name prefix finds no DP' (-not $r[0].Success -and $r[0].Error -eq 'DP instance not found') $r[0].Error
+    $shortName = $DPName.Split('.')[0]
+    if ($shortName.Length -ge 2) {
+        # A prefix that is shorter than the short name and is not a whole name finds no DP.
+        $r = @(Invoke-RedistributeContent -PackageID $pkgId -DPName $shortName.Substring(0, $shortName.Length - 1))
+        Add-Result 'redistribute by name prefix finds no DP' (-not $r[0].Success -and $r[0].Error -eq 'DP instance not found') $r[0].Error
+    }
     $r = @(Invoke-ContentValidation -PackageID $pkgId -DPName $DPName)
     Add-Result 'validate' ([bool]$r[0].Success) $r[0].Error
     $r = @(Remove-ContentFromDP -PackageID $pkgId -DPName $DPName -WhatIf)
@@ -95,9 +99,10 @@ finally {
     # Clean up everything this run created, also after a failure.
     try {
         if (-not (Test-CMConnection)) { [void](Connect-CMSite -SiteCode $SiteCode -SMSProvider $Provider) }
-        $left = @(Get-CMPackage -Fast -Name 'ZZTEST-*' -ErrorAction SilentlyContinue)
+        # Only the package that this run created: its name holds this run's tag.
+        $left = @(Get-CMPackage -Fast -Name $pkgName -ErrorAction SilentlyContinue)
         foreach ($p in $left) {
-            if ($p.Name -like 'ZZTEST-*') {
+            if ($p.Name -eq $pkgName) {
                 # CM raises a terminating error when the content is not on the DP (already removed).
                 try { Remove-CMContentDistribution -PackageId $p.PackageID -DistributionPointName $DPName -Force -ErrorAction Stop } catch { $null = $_ }
                 Remove-CMPackage -Id $p.PackageID -Force -ErrorAction Stop
@@ -106,8 +111,8 @@ finally {
     } catch { Add-Result 'cleanup package' $false $_.Exception.Message }
     try { if (Test-Path -LiteralPath $srcDir) { Remove-Item -LiteralPath $srcDir -Recurse -Force -ErrorAction Stop } } catch { Add-Result 'cleanup source folder' $false $_.Exception.Message }
     try {
-        $remaining = @(Get-CimInstance -Namespace "root\SMS\site_$SiteCode" -ClassName SMS_Package -Filter "Name LIKE 'ZZTEST-%'")
-        Add-Result 'no ZZTEST- package remains' ($remaining.Count -eq 0) (($remaining | ForEach-Object Name) -join ',')
+        $remaining = @(Get-CimInstance -Namespace "root\SMS\site_$SiteCode" -ClassName SMS_Package -Filter "Name = '$pkgName'")
+        Add-Result 'the ZZTEST- package of this run is gone' ($remaining.Count -eq 0) (($remaining | ForEach-Object Name) -join ',')
         if ($snapshot) {
             $after = Get-SiteSnapshot
             $same = (@($snapshot.Packages) -join "`n") -ceq (@($after.Packages) -join "`n")

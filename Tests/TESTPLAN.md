@@ -4,7 +4,7 @@ Measured 2026-11-06 with `Invoke-Checks.ps1` (Pester 5.7.1, PSScriptAnalyzer 1.2
 
 | | Before | After |
 |---|---|---|
-| Tests | 20 | 439 on Windows PowerShell 5.1 and on PowerShell 7 (11 contract tests skip on a machine without the console) |
+| Tests | 20 | 442 on Windows PowerShell 5.1 and on PowerShell 7 (11 contract tests skip on a machine without the console) |
 | Module coverage | 31.2% (138 of 442 commands) | 99.5% (597 of 600 commands) |
 | Lab steps | none | 17 (`Tests/Lab`) |
 
@@ -22,7 +22,7 @@ Run: `.\Invoke-Checks.ps1` (lint, tests, coverage floor 80%). It runs in CI on b
 | Script logic | `Shell.Logic.Tests.ps1` | Filters for all three views, status bar text, export routing, preferences file (first run, corrupt, unknown keys, round trip), script contract (every call resolves, every action result is checked) |
 | Start without the console | `Startup.Tests.ps1` | Plain message, `$false`, no raw exception |
 | Windows | `Window.Tests.ps1` | Main window and both dialogs: every named control, titles, no clipped text and nothing off screen at 1024x720 and 1440x900 in both themes and all three views, text contrast, control contrast |
-| Real cmdlet signatures | `CmCmdlet.Contract.Tests.ps1` | Every ConfigMgr call names only parameters that the real cmdlet has. Runs where the console is installed |
+| Real cmdlet signatures | `CmCmdlet.Contract.Tests.ps1` | Every ConfigMgr call, with the keys of a splatted hashtable, names only parameters that the real cmdlet has. Runs where the console is installed |
 | Lab | `Lab/Invoke-DPContentLab.ps1` | Creates one `ZZTEST-` package on CM01, distributes it, redistributes (full name, short name, prefix), validates, removes under `-WhatIf` and for real, removes the package, checks that no other package changed |
 
 ## Defects found
@@ -41,5 +41,6 @@ Run: `.\Invoke-Checks.ps1` (lint, tests, coverage floor 80%). It runs in CI on b
 - Contrast of disabled controls, the sidebar button border and the light text box border fails the standard (text 4.5:1, borders 3:1). The cause is the shared SuiteCommon palette and the MahApps disabled style. The window test lists each violation in `Tests/KnownContrastDefects.ps1`, fails on a new one, and fails when a listed one is fixed. The fix belongs in `app-packager-suite`.
 - The refresh timer, the busy overlay and the background runspace live inside `Invoke-Refresh`. They need a running window with a site and are covered by the lab run only.
 - The settings save in SuiteCommon is not atomic (`Set-Content` on the target file). The fix belongs in `app-packager-suite`.
-- Dialog windows are measured for structure only. Their contrast and layout need the dialog to be shown with data.
+- Dialog windows are measured for structure and titles only. Their layout and contrast need the dialog to be shown with data.
+- The title bar of an inactive window misses 4.5:1 (listed as `titlebar:inactive`). The border of a disabled sidebar button is read from the button, not from the template border at half opacity.
 - Only the Content-view buttons Redistribute, Remove and Validate run against a real site in the lab test, through the module. The window click path is not driven.
