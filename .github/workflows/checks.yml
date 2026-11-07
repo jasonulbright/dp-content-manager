@@ -14,29 +14,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
-    name: ${{ matrix.name }}
+  windows-powershell:
+    name: Windows PowerShell 5.1
     runs-on: windows-latest
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows PowerShell 5.1
-            shell: powershell
-          - name: PowerShell 7
-            shell: pwsh
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
-
       - name: Install Pester and PSScriptAnalyzer
-        shell: ${{ matrix.shell }}
+        shell: powershell
         run: |
           Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
-
       - name: Run the checks
-        shell: ${{ matrix.shell }}
+        shell: powershell
+        run: .\Invoke-Checks.ps1
+
+  powershell-7:
+    name: PowerShell 7
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Pester and PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+      - name: Run the checks
+        shell: pwsh
         run: .\Invoke-Checks.ps1
