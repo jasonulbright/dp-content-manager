@@ -18,7 +18,7 @@
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
-    Version    : 2026.11.06.0013
+    Version    : 2026.11.07.0014
     Updated    : 2026-11-06
 #>
 
@@ -266,7 +266,7 @@ function Update-ActionBarVisibility {
             $btnExportHtml.Visibility   = [System.Windows.Visibility]::Visible
             $txtFilter.Tag              = 'Filter by content name or PackageID...'
             $cboStatusFilter.Items.Clear()
-            foreach ($it in @('All','Application','Package','SUDP','BootImage','OSImage','DriverPackage','TaskSequence')) {
+            foreach ($it in @('All','Application','Package','SU Deployment Pkg','Boot Image','OS Image','Driver Package','Task Sequence')) {
                 $cboItem = New-Object System.Windows.Controls.ComboBoxItem
                 $cboItem.Content = $it
                 if ($it -eq 'All') { $cboItem.IsSelected = $true }
@@ -542,7 +542,7 @@ function Show-BulkOpDialog {
     param(
         [Parameter(Mandatory)][string]$Title,
         [Parameter(Mandatory)][string]$ActionVerb,
-        [Parameter(Mandatory)][array]$Operations,
+        [Parameter(Mandatory)][AllowEmptyCollection()][array]$Operations,
         [Parameter(Mandatory)][scriptblock]$ActionScript
     )
 
@@ -716,7 +716,7 @@ $btnRedistribute.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Redistribute Failed: select one or more content rows first.'; return }
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Redistribute Failed: refresh first to establish a CM connection.'; return }
-    $ops = Get-FailedOpsForContent -ContentSelection $sel
+    $ops = @(Get-FailedOpsForContent -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Redistribute Failed Content' -ActionVerb 'Redistribute' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
@@ -726,7 +726,7 @@ $btnRemoveFromDP.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Remove from DP: select one or more content rows first.'; return }
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove from DP: refresh first to establish a CM connection.'; return }
-    $ops = Get-OpsForContentToAllDPs -ContentSelection $sel
+    $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Remove Content from DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
@@ -736,7 +736,7 @@ $btnValidate.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Validate: select one or more content rows first.'; return }
     if (-not $script:IsConnectedFromBg) { Add-LogLine 'Validate: refresh first to establish a CM connection.'; return }
-    $ops = Get-OpsForContentToAllDPs -ContentSelection $sel
+    $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Validate Content on DPs' -ActionVerb 'Validate' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Invoke-ContentValidation -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }

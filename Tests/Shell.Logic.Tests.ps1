@@ -334,3 +334,20 @@ Describe 'Script contract' {
         $missing | Where-Object { $_ -notmatch '^(Get|Set|New|Remove|Start|Invoke)-CM' } | Should -BeNullOrEmpty
     }
 }
+
+Describe 'Empty operation lists' {
+    It 'wraps every call of the operation list functions in @(), so that an empty result stays an array and does not become $null' {
+        $strScript = Get-Content -LiteralPath $script:ShellPath -Raw
+        $arrCall = [regex]::Matches($strScript, '\$ops = (@\()?Get-(FailedOpsForContent|OpsForContentToAllDPs)')
+        $arrCall.Count | Should -BeGreaterThan 0
+        foreach ($objCall in $arrCall) {
+            $objCall.Groups[1].Value | Should -Be '@(' -Because ('the call of ' + $objCall.Groups[2].Value + ' must be wrapped: a $null list fails the Mandatory binding of Show-BulkOpDialog and the window closes')
+        }
+    }
+
+    It 'Show-BulkOpDialog accepts an empty Operations list, so that its own message can show' {
+        $def = $script:Ast.Find({ param($x) $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $x.Name -eq 'Show-BulkOpDialog' }, $true)
+        $param = $def.Body.ParamBlock.Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'Operations' }
+        @($param.Attributes | ForEach-Object { $_.TypeName.Name }) | Should -Contain 'AllowEmptyCollection'
+    }
+}
