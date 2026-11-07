@@ -1,4 +1,4 @@
-#Requires -Modules Pester
+﻿#Requires -Modules Pester
 # Logic of start-dpcontentmgr.ps1. The script cannot be dot-sourced (it opens
 # the window), so each function is cut out of its syntax tree and defined here,
 # with plain objects in place of the window controls.
