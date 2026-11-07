@@ -1,6 +1,6 @@
 @{
     RootModule        = 'DPContentMgrCommon.psm1'
-    ModuleVersion     = '2026.11.07.0014'
+    ModuleVersion     = '2026.11.07.0015'
     GUID              = 'b2c3d4e5-f6a7-8901-bcde-f23456789012'
     Author            = 'Jason Ulbright'
     Description       = 'Configuration Manager distribution point content status, redistribution, validation, and orphan detection.'
