@@ -40,14 +40,13 @@ $failed = $false
 
 Import-Module Pester -MinimumVersion 5.0 -ErrorAction Stop
 
-# Window tests open windows. They run only where Test-WindowTestsAllowed says so (never on the
-# dev PC removed, and elsewhere only with SUITE_ALLOW_WINDOW_TESTS=1). Otherwise they report Skipped
-# and the run still passes. The coverage floor stays in force: the window tests run no module
-# code, so skipping them does not lower the module coverage.
+# Window tests open windows. They run only when Test-WindowTestsAllowed says so (the opt-in
+# SUITE_ALLOW_WINDOW_TESTS is 1). Otherwise they report Skipped and the run still passes. The
+# coverage floor stays in force: the window tests run no module code, so skipping them does not
+# lower the module coverage.
 . (Join-Path $root 'Tests\WindowHarness.ps1')
 if (-not $SkipWindow -and -not (Test-WindowTestsAllowed).Allowed) {
-    if ($env:COMPUTERNAME -ieq 'removed') { Write-Host 'Window tests skipped: dev PC (removed). Run them on CM01/CLIENT01 or in CI.' }
-    else { Write-Host 'Window tests skipped: SUITE_ALLOW_WINDOW_TESTS is not 1.' }
+    Write-Host 'Window tests skipped: SUITE_ALLOW_WINDOW_TESTS is not 1.'
     # Window.Tests.ps1 prints the same reason when run alone. This marker keeps it quiet in this run.
     $env:SUITE_WINDOW_GUARD_REPORTED = '1'
 }
