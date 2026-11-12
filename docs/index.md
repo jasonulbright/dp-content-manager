@@ -9,7 +9,7 @@ DP Content Manager shows the state of Configuration Manager content on distribut
 ## Core
 
 - [DPs](core/dps.md): the roll-up of each distribution point and its storage detail.
-- [Content](core/content.md): the roll-up of each content object, its per-DP status, and Redistribute Failed, Remove from DP and Validate.
+- [Content](core/content.md): the roll-up of each content object, its per-DP status, and Redistribute Failed, Remove From DP and Validate.
 - [Status Issues](core/status-issues.md): every (DP, content) pair in a non-OK state, and the bulk fixes.
 - [Bulk action dialog](core/bulk-actions.md): the preview list, the run and the result of a bulk action.
 - [Options dialog](core/options.md): Connection and About, and the theme.

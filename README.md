@@ -5,7 +5,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-0078D4)](#requirements)
 [![License](https://img.shields.io/github/license/jasonulbright/dp-content-manager)](LICENSE)
 
-Manage Configuration Manager distribution point content at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate with mandatory preview-before-commit, and CSV / HTML export.
+Manage Configuration Manager distribution point content: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate with mandatory preview-before-commit, and CSV / HTML export.
 
 ![DP Content Manager](screenshot.png)
 
@@ -37,7 +37,7 @@ The [user guide](docs/index.md) walks every view, dialog and setting with images
 The shell uses a sidebar layout with three views and an Options modal:
 
 - **DPs** -- per-DP rollup grid: glyph status, DP, site, total content, installed, in progress, failed, % OK, Pull DP. Detail panel shows storage analysis (TotalSizeGB) for the selected DP.
-- **Content** -- per-content-object rollup: glyph, name, type, PackageID, size, DPs targeted, installed, failed, % OK. Selecting a row populates a per-DP status grid below. Action buttons: Redistribute Failed, Remove from DP, Validate.
+- **Content** -- per-content-object rollup: glyph, name, type, PackageID, size, DPs targeted, installed, failed, % OK. Selecting a row populates a per-DP status grid below. Action buttons: Redistribute Failed, Remove From DP, Validate.
 - **Status Issues** -- the triage view: every (DP, Content) row currently in a non-OK state. Multi-select + Redistribute Selected or Remove Failures for bulk remediation.
 
 ## Content Types
@@ -52,7 +52,7 @@ The shell uses a sidebar layout with three views and an Options modal:
 
 ## Bulk Operation Safety
 
-Every destructive bulk action (Redistribute, Remove from DP, Validate) opens a preview dialog showing the **full (DP, Content) impact list** before running. Click **Run N operations** to execute per-row with live OK / FAIL status and per-row error detail. The dialog's "Close" only enables AFTER the run completes -- so accidental "remove all failed across 200 DPs" without seeing the list first is impossible.
+Every destructive bulk action (Redistribute, Remove From DP, Validate) opens a preview dialog showing the **full (DP, Content) impact list** before running. Click **Run N operations** to execute per-row with live OK / FAIL status and a short failure note for each row. The dialog's "Close" only enables AFTER the run completes. So an accidental "remove all failed across 200 DPs" without seeing the list first is impossible.
 
 ## Scale-Optimized Status Queries
 

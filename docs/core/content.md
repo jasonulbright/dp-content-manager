@@ -4,7 +4,7 @@ The Content view shows one row for each content object and its status on each di
 
 ## What it does
 
-Each row shows a status glyph, the name, the type, the package ID, the size, the number of DPs that the content targets, the number installed and failed, and the percent OK. Select a row to see the status on each DP below the grid. Three buttons act on the selected content: **Redistribute Failed...**, **Remove from DP...** and **Validate...**. Each opens a preview first. See [Bulk action dialog](bulk-actions.md).
+Each row shows a status glyph, the name, the type, the package ID, the size, the number of DPs that the content targets, the number installed and failed, and the percent OK. Select a row to see the status on each DP below the grid. Three buttons act on the selected content: **Redistribute Failed...**, **Remove From DP...** and **Validate...**. Each opens a preview first. See [Bulk action dialog](bulk-actions.md).
 
 ## When to use it
 
@@ -43,7 +43,7 @@ Use it to find out where a content object is, and to fix or remove it on its DPs
 ### Validate, redistribute or remove
 
 1. Select one or more rows.
-2. Select **Validate...**, **Redistribute Failed...** or **Remove from DP...**. A preview dialog lists every (DP, content) pair that the action touches.
+2. Select **Validate...**, **Redistribute Failed...** or **Remove From DP...**. A preview dialog lists every (DP, content) pair that the action touches.
 
 ![The Validate preview](../images/dialog-validate-preview.png)
 
@@ -63,12 +63,12 @@ This guide opened the previews and selected **Close**. It did not run an action.
 | Filter box and type list | Filter the grid. |
 | **Export CSV**, **Export HTML** | Write the shown rows. |
 | **Redistribute Failed...** | Previews a redistribution of the failed DPs of the selected content. |
-| **Remove from DP...** | Previews the removal of the selected content from all its DPs. |
+| **Remove From DP...** | Previews the removal of the selected content from all its DPs. |
 | **Validate...** | Previews a validation of the selected content on all its DPs. |
 
 ## Limits
 
-- **Remove from DP...** and **Validate...** use every DP that has a status row for the content. Content with no status row has no operation, and the log shows `no matching operations to perform`.
+- **Remove From DP...** and **Validate...** use every DP that has a status row for the content. Content with no status row has no operation, and the log shows `no matching operations to perform`.
 - The three buttons need a selected row and a refresh. Without one, the log says to select rows first, or to refresh first.
 
 ## Troubleshooting

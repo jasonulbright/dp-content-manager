@@ -5,7 +5,7 @@
 .DESCRIPTION
     Sidebar navigation across three views (DPs, Content, Status Issues),
     inline action bar (Refresh, filter, status filter, exports), modal
-    dialogs for Options, Redistribute, Remove from DP, Validate. Status
+    dialogs for Options, Redistribute, Remove From DP, Validate. Status
     Issues view is a triage list of every DP x Content row currently in
     a non-OK state.
 
@@ -115,6 +115,8 @@ $viewStatusIssues = $window.FindName('viewStatusIssues')
 
 $gridDPs          = $window.FindName('gridDPs')
 $txtDPDetail      = $window.FindName('txtDPDetail')
+$txtStatusSiteCode = $window.FindName('txtSiteCode')
+$txtStatusProvider = $window.FindName('txtSmsProvider')
 
 $gridContent       = $window.FindName('gridContent')
 $gridContentPerDP  = $window.FindName('gridContentPerDP')
@@ -165,17 +167,37 @@ $script:ViewButtons = @(
 )
 $script:ActiveView = 'DPs'
 
+# Every button that is not a sidebar button takes the shared button theme (SuiteCommon Set-ButtonTheme).
+$script:WorkflowButtons = @($btnRefresh, $btnExportCsv, $btnExportHtml, $btnRedistribute, $btnRemoveFromDP, $btnValidate, $btnRedistributeIssues, $btnRemoveIssues)
+
 Initialize-SuiteTheme -Window $window `
     -IsDarkGetter { [bool]$global:Prefs['DarkMode'] } `
     -ActiveViewGetter { $script:ActiveView } `
     -ViewButtons $script:ViewButtons `
     -OptionsButton $btnOptions `
-    -LogLabel $lblLogOutput
+    -LogLabel $lblLogOutput `
+    -WorkflowButtons $script:WorkflowButtons `
+    -OptionsButtons @()
+
+# A dialog button takes the look of a themed toolbar button, so it matches in both themes.
+function Set-DialogButtonTheme {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Mutates in-window brush properties only.')]
+    param([Parameter(Mandatory)]$Dialog, [Parameter(Mandatory)][string[]]$Name)
+    foreach ($n in $Name) {
+        $b = $Dialog.FindName($n)
+        if (-not $b) { continue }
+        $b.Background  = $btnRefresh.Background
+        $b.BorderBrush = $btnRefresh.BorderBrush
+        if ($btnRefresh.ReadLocalValue([System.Windows.Controls.Control]::ForegroundProperty) -eq [System.Windows.DependencyProperty]::UnsetValue) { $b.ClearValue([System.Windows.Controls.Control]::ForegroundProperty) }
+        else { $b.Foreground = $btnRefresh.Foreground }
+    }
+}
 
 $__startIsDark = [bool]$global:Prefs['DarkMode']
 $toggleTheme.IsOn = $__startIsDark
 $txtThemeLabel.Text = if ($__startIsDark) { 'Dark Theme' } else { 'Light Theme' }
 Update-SidebarButtonTheme
+Set-ButtonTheme
 
 $toggleTheme.Add_Toggled({
     $isDark = [bool]$toggleTheme.IsOn
@@ -184,15 +206,16 @@ $toggleTheme.Add_Toggled({
     $global:Prefs['DarkMode'] = $isDark
     Save-DpcmPreferences -Prefs $global:Prefs
     Update-SidebarButtonTheme
+    Set-ButtonTheme
     Update-TitleBarBrushes
     Add-LogLine ('Theme: {0}' -f $(if ($isDark) { 'dark' } else { 'light' }))
 })
 
 # === View switching ===
 $script:ViewMeta = @{
-    'DPs'           = @{ Title = 'DPs';            Subtitle = 'Per-DP rollup of total content, installed, in progress, failed.' }
-    'Content'       = @{ Title = 'Content';        Subtitle = 'Per-content-object rollup. Select a row to see its per-DP distribution status.' }
-    'Status Issues' = @{ Title = 'Status Issues';  Subtitle = 'Every (DP, Content) row currently in a non-OK state. The triage view -- multi-select for bulk redistribute / remove.' }
+    'DPs'           = @{ Title = 'DPs';            Subtitle = 'Content totals for each distribution point: installed, in progress and failed.' }
+    'Content'       = @{ Title = 'Content';        Subtitle = 'Distribution status of each content object. Select a row to see its status on each distribution point.' }
+    'Status Issues' = @{ Title = 'Status Issues';  Subtitle = 'Each distribution point and content pair that is not in the Success state. Select several rows for a bulk action.' }
 }
 function Set-ActiveView {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='In-window Visibility + header text only.')]
@@ -296,13 +319,16 @@ function Update-StatusBarSummary {
     param()
     $parts = @()
     if ($script:IsConnectedFromBg -and $global:Prefs.SiteCode) { $parts += "Connected to $($global:Prefs.SiteCode)" }
-    elseif (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) { $parts += 'Open Options to configure site code and SMS provider' }
+    elseif (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) { $parts += 'Open Options to configure site code and SMS Provider' }
     else { $parts += 'Ready. Click Refresh.' }
     if (@($script:RawDPs).Count -gt 0)          { $parts += ('{0} DPs' -f @($script:RawDPs).Count) }
     if (@($script:RawContent).Count -gt 0)      { $parts += ('{0} content' -f @($script:RawContent).Count) }
     if (@($script:StatusIssueRows).Count -gt 0) { $parts += ('{0} issues' -f @($script:StatusIssueRows).Count) }
     if ($script:LastRefreshTime) { $parts += ('last refresh {0}' -f $script:LastRefreshTime.ToString('HH:mm:ss')) }
     Set-StatusText ($parts -join '   |   ')
+    # The site code and the SMS Provider values show in normal text. Their titles are bold 14 pt.
+    if ($txtStatusSiteCode) { $txtStatusSiteCode.Text = [string]$global:Prefs.SiteCode }
+    if ($txtStatusProvider) { $txtStatusProvider.Text = [string]$global:Prefs.SMSProvider }
 }
 
 # === Filter ===
@@ -364,7 +390,7 @@ $cboStatusFilter.Add_SelectionChanged({ Update-Filter })
 # === Detail panels ===
 $gridDPs.Add_SelectionChanged({
     $row = $gridDPs.SelectedItem
-    if (-not $row) { $txtDPDetail.Text = 'Select a DP to see content roll-up + storage analysis.'; return }
+    if (-not $row) { $txtDPDetail.Text = 'Select a DP to see its content totals and storage analysis.'; return }
     $lines = @(
         ('DP:               {0}' -f $row.ServerName),
         ('Site:             {0}' -f $row.SiteCode),
@@ -426,8 +452,8 @@ function Invoke-Refresh {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Posts work to bg runspace.')]
     param()
     if (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) {
-        Add-LogLine 'Refresh: site code and SMS provider must be set in Options first.'
-        Set-StatusText 'Open Options to configure site code and SMS provider, then refresh.'
+        Add-LogLine 'Refresh: site code and SMS Provider must be set in Options first.'
+        Set-StatusText 'Open Options to configure site code and SMS Provider, then refresh.'
         return
     }
     Initialize-BgRunspace
@@ -476,7 +502,7 @@ function Invoke-Refresh {
                 StorageByDP      = $storage
             }
         }
-        catch { $State.ErrorMsg = $_.Exception.Message }
+        catch { $State.ErrorDetail = $_.Exception.Message; $State.ErrorMsg = 'The refresh failed.' }
         finally { $State.Done = $true }
     }).AddArgument($siteCode).AddArgument($smsProvider).AddArgument($script:BgState)
 
@@ -496,6 +522,7 @@ function Invoke-Refresh {
                 $progressOverlay.Visibility = [System.Windows.Visibility]::Collapsed
                 $btnRefresh.IsEnabled = $true
                 $script:IsConnectedFromBg = $false
+                Write-Log ('Refresh failed: {0}' -f $(if ($script:BgState.ErrorDetail) { $script:BgState.ErrorDetail } else { $script:BgState.ErrorMsg })) -Level ERROR -Quiet
                 Add-LogLine ('Refresh failed: {0}' -f $script:BgState.ErrorMsg)
                 Set-StatusText 'Refresh failed.'
                 return
@@ -518,7 +545,10 @@ function Invoke-Refresh {
 
             # UI thread CM connect mirror so per-action cmdlets resolve.
             try { [void](Connect-CMSite -SiteCode $global:Prefs.SiteCode -SMSProvider $global:Prefs.SMSProvider) }
-            catch { Add-LogLine ('UI-thread CM connect: {0}' -f $_.Exception.Message) }
+            catch {
+                Write-Log ('UI-thread CM connect failed: {0}' -f $_.Exception.Message) -Level ERROR -Quiet
+                Add-LogLine 'The connection for the actions failed. The log file has the details.'
+            }
 
             Update-Filter
             Update-StatusBarSummary
@@ -575,6 +605,7 @@ function Show-BulkOpDialog {
             </Style>
             <Style x:Key="DialogAccentButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
                 <Setter Property="MinWidth" Value="120"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
                 <Setter Property="Margin" Value="0,0,8,0"/>
                 <Setter Property="Controls:ControlsHelper.ContentCharacterCasing" Value="Normal"/>
             </Style>
@@ -597,6 +628,26 @@ function Show-BulkOpDialog {
                   RowHeaderWidth="0" BorderThickness="1"
                   BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
                   GridLinesVisibility="Horizontal" FontSize="11">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource MahApps.Styles.DataGridRow}">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell" BasedOn="{StaticResource MahApps.Styles.DataGridCell}">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Result"   Width="80"  Binding="{Binding Result}"/>
                 <DataGridTextColumn Header="DP"       Width="2*"  Binding="{Binding DPName}"/>
@@ -621,6 +672,7 @@ function Show-BulkOpDialog {
     $dlg.Title = $Title
     Install-TitleBarDragFallback -Window $dlg
     Set-DialogTheme -Dialog $dlg
+    Set-DialogButtonTheme -Dialog $dlg -Name 'btnClose'
 
     $txtImpactHeader = $dlg.FindName('txtImpactHeader')
     $gridOps         = $dlg.FindName('gridOps')
@@ -666,12 +718,13 @@ function Show-BulkOpDialog {
                 $okCount++
             } catch {
                 $row.Result = 'FAIL'
-                $row.Detail = $_.Exception.Message
+                Write-Log ('{0}: {1} on {2} failed: {3}' -f $ActionVerb, $row.ContentName, $row.DPName, $_.Exception.Message) -Level ERROR -Quiet
+                $row.Detail = 'The operation failed. The log file has the details.'
                 $failCount++
             }
             $gridOps.Items.Refresh()
         }
-        $txtBulkStatus.Text = ('Done. {0} succeeded, {1} failed. (Errors are in the Detail column.)' -f $okCount, $failCount)
+        $txtBulkStatus.Text = ('Done. {0} succeeded, {1} failed. The Detail column shows each failure.' -f $okCount, $failCount)
         Add-LogLine ('{0}: {1} succeeded, {2} failed across {3} operations.' -f $ActionVerb, $okCount, $failCount, $opCount)
         $script:BulkOpDone = $true
     })
@@ -724,10 +777,10 @@ $btnRedistribute.Add_Click({
 
 $btnRemoveFromDP.Add_Click({
     $sel = @($gridContent.SelectedItems)
-    if ($sel.Count -eq 0) { Add-LogLine 'Remove from DP: select one or more content rows first.'; return }
-    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove from DP: refresh first to establish a CM connection.'; return }
+    if ($sel.Count -eq 0) { Add-LogLine 'Remove From DP: select one or more content rows first.'; return }
+    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove From DP: refresh first to establish a CM connection.'; return }
     $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
-    if (Show-BulkOpDialog -Title 'Remove Content from DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
+    if (Show-BulkOpDialog -Title 'Remove Content From DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
     }) { Invoke-Refresh }
 })
@@ -845,6 +898,7 @@ function Show-OptionsDialog {
             </Style>
             <Style x:Key="DialogAccentButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
                 <Setter Property="MinWidth" Value="90"/><Setter Property="Height" Value="32"/>
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
                 <Setter Property="Margin" Value="0,0,8,0"/>
                 <Setter Property="Controls:ControlsHelper.ContentCharacterCasing" Value="Normal"/>
             </Style>
@@ -869,21 +923,21 @@ function Show-OptionsDialog {
         <Border Grid.Column="1" Grid.Row="0" Background="{DynamicResource MahApps.Brushes.Gray8}"/>
         <Grid Grid.Column="2" Grid.Row="0" Margin="20,16,20,16">
             <StackPanel x:Name="paneConnection" Visibility="Visible">
-                <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                <TextBlock Text="Site Code" FontSize="11" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
+                <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock Text="Site Code" FontSize="14" FontWeight="Bold" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                 <TextBox x:Name="txtSiteCode" FontSize="12" Padding="6,4,6,4"
                          Controls:TextBoxHelper.Watermark="e.g. MCM" Width="120" HorizontalAlignment="Left"/>
-                <TextBlock Text="SMS Provider FQDN" FontSize="11" Margin="0,12,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
+                <TextBlock Text="SMS Provider" FontSize="14" FontWeight="Bold" Margin="0,12,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                 <TextBox x:Name="txtSmsProvider" FontSize="12" Padding="6,4,6,4"
                          Controls:TextBoxHelper.Watermark="e.g. cm01.contoso.com"/>
-                <TextBlock Text="Used for the CM PSDrive root + WMI distribution-status queries. The account running this app needs read access to the SMS provider for status retrieval and write access for redistribute / remove operations."
+                <TextBlock Text="The app uses these values for the ConfigMgr drive and the WMI distribution status queries. The account that runs the app needs read access to the SMS Provider. It needs write access to redistribute or remove content."
                            FontSize="11" TextWrapping="Wrap" Margin="0,16,0,0"
                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
             </StackPanel>
             <StackPanel x:Name="paneAbout" Visibility="Collapsed">
-                <TextBlock Text="About" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                <TextBlock x:Name="txtAboutVersion" Text="DP Content Manager v1.2.1" FontSize="13" FontWeight="SemiBold"/>
-                <TextBlock Text="Audit DP content distribution at scale: per-DP and per-content rollups, a triage view for non-OK rows, bulk redistribute / remove / validate. WMI bulk-status pull keeps the round-trip count down even on large environments."
+                <TextBlock Text="About" FontSize="13" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="txtAboutVersion" Text="DP Content Manager v1.2.1" FontSize="13" FontWeight="Bold"/>
+                <TextBlock Text="Audit content distribution on your distribution points. The app shows totals for each distribution point and for each content object. It lists the content that is not in the Success state. It redistributes, removes and validates content in bulk. One WMI query gets the status of all content, which keeps the query count low."
                            FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"/>
                 <TextBlock Text="Author: Jason Ulbright. License: MIT."
                            FontSize="11" Margin="0,16,0,0" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
@@ -904,6 +958,7 @@ function Show-OptionsDialog {
     $dlg.Owner = $window
     Install-TitleBarDragFallback -Window $dlg
     Set-DialogTheme -Dialog $dlg
+    Set-DialogButtonTheme -Dialog $dlg -Name 'btnCatConnection', 'btnCatAbout', 'btnCancel'
     $btnCatConnection = $dlg.FindName('btnCatConnection')
     $btnCatAbout      = $dlg.FindName('btnCatAbout')
     $paneConnection   = $dlg.FindName('paneConnection')
@@ -961,7 +1016,7 @@ $window.Add_Loaded({
     Update-TitleBarBrushes
     Update-ActionBarVisibility
     Update-StatusBarSummary
-    Add-LogLine 'DP Content Manager ready. Configure Site / Provider in Options, then click Refresh.'
+    Add-LogLine 'DP Content Manager ready. Configure Site Code / SMS Provider in Options, then click Refresh.'
 })
 
 # Suite update notice: one shared daily lookup across the suite tools; the launcher installs.
