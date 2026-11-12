@@ -133,3 +133,29 @@ function Get-FieldTitleElement {
     if ($prev -and $prev.LocalName -in 'TextBlock', 'Label') { return $prev }
     return $null
 }
+
+# Lists every hard-coded color in the Setters and the attributes of the given nodes.
+# Only a DynamicResource or a TemplateBinding is allowed.
+function Get-HardColor {
+    param($Nodes, [string]$Label)
+    $brushProps = 'Background|Foreground|BorderBrush|Fill|Stroke|OpacityMask|CaretBrush|SelectionBrush'
+    foreach ($n in $Nodes) {
+        foreach ($setter in @($n.SelectNodes('descendant-or-self::*[local-name()="Setter"]'))) {
+            if ($setter.GetAttribute('Property') -notmatch ('^(' + $brushProps + ')$')) { continue }
+            $v = $setter.GetAttribute('Value')
+            if ($v) {
+                if ($v -notmatch '^\{(DynamicResource|TemplateBinding)\b') { '{0}: Setter {1}="{2}"' -f $Label, $setter.GetAttribute('Property'), $v }
+            }
+            else {
+                foreach ($c in @($setter.SelectNodes('descendant::*[@Color]'))) {
+                    if ($c.GetAttribute('Color') -notmatch '^\{DynamicResource\b') { '{0}: Setter {1} holds the color {2}' -f $Label, $setter.GetAttribute('Property'), $c.GetAttribute('Color') }
+                }
+            }
+        }
+        foreach ($el in @($n.SelectNodes('descendant-or-self::*[not(local-name()="Setter")]'))) {
+            foreach ($attr in @($el.Attributes)) {
+                if ($attr.LocalName -match ('^(' + $brushProps + ')$') -and $attr.Value -notmatch '^\{(DynamicResource|TemplateBinding)\b') { '{0}: {1} {2}="{3}"' -f $Label, $el.LocalName, $attr.LocalName, $attr.Value }
+            }
+        }
+    }
+}

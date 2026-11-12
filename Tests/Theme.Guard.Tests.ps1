@@ -307,3 +307,28 @@ Describe 'No raw exception text in the UI' {
         @(Get-RawExceptionToUi -Path $Path) | Should -BeNullOrEmpty
     }
 }
+
+Describe 'No hard-coded color in a style or a template' {
+    It 'sets no color literal in any Style or ControlTemplate of <_.Source>' -ForEach @(Get-XamlDocument | Where-Object { $_.Source -notlike 'SuiteCommon.psm1*' }) {
+        [xml]$x = $_.Text
+        $nodes = @($x.SelectNodes('//*[local-name()="Style" or local-name()="ControlTemplate"]'))
+        @(Get-HardColor -Nodes $nodes -Label $_.Source) | Should -BeNullOrEmpty
+    }
+
+    It 'scans the styles and templates of the main window (the scan is not empty)' {
+        $doc = @($script:XamlDocs | Where-Object { $_.Source -eq 'MainWindow.xaml' })[0]
+        [xml]$x = $doc.Text
+        @($x.SelectNodes('//*[local-name()="Style"]')).Count | Should -BeGreaterThan 3
+        @($x.SelectNodes('//*[local-name()="ControlTemplate"]')).Count | Should -BeGreaterThan 0
+    }
+
+    It 'detects a color literal in a style, a template and an attribute (the check itself)' {
+        [xml]$x = '<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"><Style x:Key="S" TargetType="Button"><Setter Property="Foreground" Value="White"/><Setter Property="Background"><Setter.Value><SolidColorBrush Color="#1E1E1E"/></Setter.Value></Setter><Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent}"/></Style><ControlTemplate x:Key="T" TargetType="Button"><Border BorderBrush="#555555" Background="{TemplateBinding Background}"/></ControlTemplate></ResourceDictionary>'
+        $nodes = @($x.SelectNodes('//*[local-name()="Style" or local-name()="ControlTemplate"]'))
+        $found = @(Get-HardColor -Nodes $nodes -Label 'sample')
+        $found.Count | Should -Be 3
+        ($found -join ' ') | Should -Match 'White'
+        ($found -join ' ') | Should -Match '#1E1E1E'
+        ($found -join ' ') | Should -Match '#555555'
+    }
+}
