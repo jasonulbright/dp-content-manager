@@ -103,10 +103,10 @@ Describe 'Fonts do not depend on the theme (b)' {
         }
     }
 
-    It 'makes the connection boxes bold and 14 pt or larger the same way in both themes' {
+    It 'makes the field titles bold and 14 pt or larger the same way in both themes' {
         $path = Join-Path $script:RepoRoot 'Lib\SuiteCommon\SuiteCommon.psm1'
         $text = Get-Content -LiteralPath $path -Raw
-        $text | Should -Match 'ConnectionBoxFontSize\s*=\s*14'
+        $text | Should -Match 'FieldTitleFontSize\s*=\s*14'
         $text | Should -Match '\.FontWeight\s*=\s*\[System\.Windows\.FontWeights\]::Bold'
     }
 
@@ -119,16 +119,6 @@ Describe 'Fonts do not depend on the theme (b)' {
             }
         }
         @($bad) | Should -BeNullOrEmpty
-    }
-
-    It 'sets the site code and SMS Provider boxes to bold 14 pt or more in <_.Source>' -ForEach @(Get-XamlDocument) {
-        [xml]$x = $_.Text
-        foreach ($name in 'txtSiteCode', 'txtSmsProvider', 'txtProvider', 'txtSiteServer') {
-            $el = $x.SelectSingleNode(("//*[@*[local-name()='Name']='{0}']" -f $name))
-            if (-not $el) { continue }
-            [double]$el.GetAttribute('FontSize') | Should -BeGreaterOrEqual 14 -Because $name
-            $el.GetAttribute('FontWeight') | Should -Be 'Bold' -Because $name
-        }
     }
 }
 
@@ -157,5 +147,163 @@ Describe 'No banned word in the UI text and the documents (c)' {
             }
         }
         @($bad) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Theme helpers of SuiteCommon behave and are used (a, b, d)' {
+    BeforeAll {
+        $script:SuitePath = Join-Path $script:RepoRoot 'Lib\SuiteCommon\SuiteCommon.psm1'
+        $script:SuiteAst = [System.Management.Automation.Language.Parser]::ParseFile($script:SuitePath, [ref]$null, [ref]$null)
+        function Get-SuiteFunction {
+            param([string]$Name)
+            $script:SuiteAst.Find({ param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $Name }, $true)
+        }
+        function Get-CommandCount {
+            param($Ast, [string]$Name)
+            @($Ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] -and $n.GetCommandName() -eq $Name }, $true)).Count
+        }
+        . ([scriptblock]::Create((Get-SuiteFunction 'Set-ThemeForeground').Extent.Text))
+    }
+
+    It 'Set-ThemeForeground sets the on-blue brush in light mode and clears it in dark mode' {
+        $c = [pscustomobject]@{ Foreground = $null }
+        Set-ThemeForeground -Control $c -IsDark $false -OnBlue 'White'
+        $c.Foreground | Should -Be 'White'
+        Set-ThemeForeground -Control $c -IsDark $true -OnBlue 'White'
+        $c.Foreground | Should -BeNullOrEmpty
+    }
+
+    It '<Name> calls Set-ThemeForeground' -ForEach @(@{ Name = 'Set-ButtonTheme' }, @{ Name = 'Update-SidebarButtonTheme' }) {
+        (Get-CommandCount (Get-SuiteFunction $Name) 'Set-ThemeForeground') | Should -BeGreaterThan 0
+    }
+
+    It '<Name> calls Set-ConnectionTextTheme' -ForEach @(@{ Name = 'Set-ButtonTheme' }, @{ Name = 'Update-SidebarButtonTheme' }) {
+        (Get-CommandCount (Get-SuiteFunction $Name) 'Set-ConnectionTextTheme') | Should -BeGreaterThan 0
+    }
+
+    It 'the script starts the theme and every dialog calls Set-DialogTheme' {
+        $shell = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $script:RepoRoot 'start-dpcontentmgr.ps1'), [ref]$null, [ref]$null)
+        (Get-CommandCount $shell 'Initialize-SuiteTheme') | Should -BeGreaterThan 0
+        (Get-CommandCount $shell 'Update-SidebarButtonTheme') | Should -BeGreaterThan 0
+        $dialogs = @($script:XamlDocs | Where-Object { $_.Source -like 'start-dpcontentmgr*here-string*' }).Count
+        (Get-CommandCount $shell 'Set-DialogTheme') | Should -BeGreaterOrEqual $dialogs
+        (Get-SuiteFunction 'Set-DialogTheme') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'sets a white foreground in every style based on an accent style, in <_.Source>' -ForEach @(Get-XamlDocument | Where-Object { $_.Source -notlike 'SuiteCommon.psm1*' }) {
+        [xml]$x = $_.Text
+        $bad = foreach ($st in @($x.SelectNodes("//*[local-name()='Style']"))) {
+            if ($st.GetAttribute('BasedOn') -match 'Accent') {
+                $fg = $st.ChildNodes | Where-Object { $_.LocalName -eq 'Setter' -and $_.GetAttribute('Property') -eq 'Foreground' } | Select-Object -First 1
+                if (-not $fg -or -not (Test-WhiteBrush (Get-SetterValue $fg))) { 'Style {0} has no white Foreground' -f $st.GetAttribute('Key') }
+            }
+        }
+        @($bad) | Should -BeNullOrEmpty
+    }
+
+    It 'has the site code and SMS Provider boxes with a bold 14 pt title and a normal value' {
+        foreach ($name in 'txtSiteCode', 'txtSmsProvider') {
+            $hits = @()
+            foreach ($d in $script:XamlDocs) {
+                [xml]$x = $d.Text
+                $el = $x.SelectSingleNode(("//*[@*[local-name()='Name']='{0}']" -f $name))
+                if ($el) { $hits += [pscustomobject]@{ Value = $el; Title = (Get-FieldTitleElement $el) } }
+            }
+            $hits.Count | Should -BeGreaterThan 0 -Because ('{0} must exist in a document' -f $name)
+            foreach ($h in $hits) {
+                $h.Title | Should -Not -BeNullOrEmpty -Because ('{0} needs a title TextBlock before it' -f $name)
+                [double]$h.Title.GetAttribute('FontSize') | Should -BeGreaterOrEqual 14 -Because ('title of {0}' -f $name)
+                $h.Title.GetAttribute('FontWeight') | Should -Be 'Bold' -Because ('title of {0}' -f $name)
+                $h.Value.GetAttribute('FontWeight') | Should -BeIn @('', 'Normal') -Because ('value {0}' -f $name)
+                if ($h.Value.GetAttribute('FontSize')) { [double]$h.Value.GetAttribute('FontSize') | Should -BeLessThan 14 -Because ('value {0}' -f $name) }
+            }
+        }
+    }
+
+    It 'SuiteCommon bolds the titles with 14 pt and not the values' {
+        $text = Get-Content -LiteralPath $script:SuitePath -Raw
+        $text | Should -Match 'FieldTitleFontSize\s*=\s*14'
+        $text | Should -Match 'Find-FieldTitle'
+        $text | Should -Not -Match '\$box\.FontWeight'
+    }
+}
+
+Describe 'Every button takes the shared themed style' {
+    BeforeAll {
+        function Get-StyleChain {
+            param($Doc, [string]$Key)
+            $guard = 0
+            while ($Key -and $guard -lt 10) {
+                $guard++
+                $st = $Doc.SelectSingleNode(("//*[local-name()='Style'][@*[local-name()='Key']='{0}']" -f $Key))
+                if (-not $st) { return $false }
+                $based = $st.GetAttribute('BasedOn')
+                if ($based -match 'MahApps\.Styles\.Button') { return $true }
+                $Key = if ($based -match 'StaticResource\s+([^\}\s]+)') { $Matches[1] } else { '' }
+            }
+            return $false
+        }
+        $script:ShellText = Get-Content -LiteralPath (Join-Path $script:RepoRoot 'start-dpcontentmgr.ps1') -Raw
+    }
+
+    # The dialogs of the vendored SuiteCommon are outside this scope: the app does not open them, and the fix belongs upstream.
+    It 'gives each Button in <_.Source> a style that is based on a MahApps button style' -ForEach @(Get-XamlDocument | Where-Object { $_.Source -notlike 'SuiteCommon.psm1*' }) {
+        [xml]$x = $_.Text
+        $bad = foreach ($b in @($x.SelectNodes("//*[local-name()='Button']"))) {
+            $style = $b.GetAttribute('Style')
+            $key = if ($style -match '(?:Static|Dynamic)Resource\s+([^\}\s]+)') { $Matches[1] } else { '' }
+            if (-not $key -or -not (Get-StyleChain -Doc $x -Key $key)) { 'Button {0} has no shared style' -f $b.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml') }
+        }
+        @($bad) | Should -BeNullOrEmpty
+    }
+
+    It 'creates no button in code' {
+        foreach ($f in 'start-dpcontentmgr.ps1', 'Module\DPContentMgrCommon.psm1') {
+            (Get-Content -LiteralPath (Join-Path $script:RepoRoot $f) -Raw) | Should -Not -Match 'Controls\.Button\]|New-Object\s+(-TypeName\s+)?System\.Windows\.Controls\.Button' -Because $f
+        }
+    }
+
+    It 'themes every button of the main window through SuiteCommon' {
+        [xml]$x = Get-Content -LiteralPath (Join-Path $script:RepoRoot 'MainWindow.xaml') -Raw
+        $names = @($x.SelectNodes("//*[local-name()='Button']") | ForEach-Object { $_.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml') })
+        $names.Count | Should -BeGreaterThan 5
+        $wf = [regex]::Match($script:ShellText, '\$script:WorkflowButtons\s*=\s*@\(([^)]*)\)').Groups[1].Value
+        $views = ([regex]::Matches($script:ShellText, 'Button\s*=\s*\$(\w+)') | ForEach-Object { $_.Groups[1].Value }) -join ' '
+        $opt = [regex]::Match($script:ShellText, '-OptionsButton\s+\$(\w+)').Groups[1].Value
+        $themed = ($wf + ' ' + $views + ' ' + $opt)
+        $unthemed = $names | Where-Object { $themed -notmatch ('\b{0}\b' -f $_) }
+        @($unthemed) | Should -BeNullOrEmpty
+        $script:ShellText | Should -Match '-WorkflowButtons\s+\$script:WorkflowButtons'
+        $script:ShellText | Should -Match '(?m)^Set-ButtonTheme'
+    }
+
+    It 'themes every button of each dialog: an accent style or Set-DialogButtonTheme' {
+        $docs = @($script:XamlDocs | Where-Object { $_.Source -like 'start-dpcontentmgr*here-string*' })
+        $docs.Count | Should -BeGreaterThan 0
+        $called = ([regex]::Matches($script:ShellText, 'Set-DialogButtonTheme\s+-Dialog\s+\$dlg\s+-Name\s+([^\r\n]+)') | ForEach-Object { $_.Groups[1].Value }) -join ' '
+        $bad = foreach ($d in $docs) {
+            [xml]$x = $d.Text
+            foreach ($b in @($x.SelectNodes("//*[local-name()='Button']"))) {
+                $name = $b.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml')
+                $style = $b.GetAttribute('Style')
+                $key = if ($style -match 'StaticResource\s+([^\}\s]+)') { $Matches[1] } else { '' }
+                $st = $x.SelectSingleNode(("//*[local-name()='Style'][@*[local-name()='Key']='{0}']" -f $key))
+                $accent = $st -and $st.GetAttribute('BasedOn') -match 'Accent'
+                if (-not $accent -and $called -notmatch ("'{0}'" -f $name)) { '{0}: {1} is not themed' -f $d.Source, $name }
+            }
+        }
+        @($bad) | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'No raw exception text in the UI' {
+    It 'flags raw exception text in a UI sink' {
+        @(Get-RawExceptionToUi -ScriptText 'try { 1 } catch { Add-LogLine ("x {0}" -f $_.Exception.Message) }').Count | Should -Be 1
+        @(Get-RawExceptionToUi -ScriptText 'try { 1 } catch { $row.Detail = $_.Exception.Message }').Count | Should -Be 1
+        @(Get-RawExceptionToUi -ScriptText 'try { 1 } catch { Write-Log ("x {0}" -f $_.Exception.Message) -Level ERROR -Quiet; Add-LogLine "Failed. See the log file." }').Count | Should -Be 0
+    }
+
+    It 'sends no raw exception text to a UI sink in <Name>' -ForEach $script:PsFilesD {
+        @(Get-RawExceptionToUi -Path $Path) | Should -BeNullOrEmpty
     }
 }

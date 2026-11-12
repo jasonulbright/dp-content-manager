@@ -1,11 +1,11 @@
-﻿<#
+<#
 .SYNOPSIS
     Main window of DP Content Manager, a tool that shows and repairs Configuration Manager distribution point content.
 
 .DESCRIPTION
     Sidebar navigation across three views (DPs, Content, Status Issues),
     inline action bar (Refresh, filter, status filter, exports), modal
-    dialogs for Options, Redistribute, Remove from DP, Validate. Status
+    dialogs for Options, Redistribute, Remove From DP, Validate. Status
     Issues view is a triage list of every DP x Content row currently in
     a non-OK state.
 
@@ -167,17 +167,37 @@ $script:ViewButtons = @(
 )
 $script:ActiveView = 'DPs'
 
+# Every button that is not a sidebar button takes the shared button theme (SuiteCommon Set-ButtonTheme).
+$script:WorkflowButtons = @($btnRefresh, $btnExportCsv, $btnExportHtml, $btnRedistribute, $btnRemoveFromDP, $btnValidate, $btnRedistributeIssues, $btnRemoveIssues)
+
 Initialize-SuiteTheme -Window $window `
     -IsDarkGetter { [bool]$global:Prefs['DarkMode'] } `
     -ActiveViewGetter { $script:ActiveView } `
     -ViewButtons $script:ViewButtons `
     -OptionsButton $btnOptions `
-    -LogLabel $lblLogOutput
+    -LogLabel $lblLogOutput `
+    -WorkflowButtons $script:WorkflowButtons `
+    -OptionsButtons @()
+
+# A dialog button takes the look of a themed toolbar button, so it matches in both themes.
+function Set-DialogButtonTheme {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Mutates in-window brush properties only.')]
+    param([Parameter(Mandatory)]$Dialog, [Parameter(Mandatory)][string[]]$Name)
+    foreach ($n in $Name) {
+        $b = $Dialog.FindName($n)
+        if (-not $b) { continue }
+        $b.Background  = $btnRefresh.Background
+        $b.BorderBrush = $btnRefresh.BorderBrush
+        if ($btnRefresh.ReadLocalValue([System.Windows.Controls.Control]::ForegroundProperty) -eq [System.Windows.DependencyProperty]::UnsetValue) { $b.ClearValue([System.Windows.Controls.Control]::ForegroundProperty) }
+        else { $b.Foreground = $btnRefresh.Foreground }
+    }
+}
 
 $__startIsDark = [bool]$global:Prefs['DarkMode']
 $toggleTheme.IsOn = $__startIsDark
 $txtThemeLabel.Text = if ($__startIsDark) { 'Dark Theme' } else { 'Light Theme' }
 Update-SidebarButtonTheme
+Set-ButtonTheme
 
 $toggleTheme.Add_Toggled({
     $isDark = [bool]$toggleTheme.IsOn
@@ -186,6 +206,7 @@ $toggleTheme.Add_Toggled({
     $global:Prefs['DarkMode'] = $isDark
     Save-DpcmPreferences -Prefs $global:Prefs
     Update-SidebarButtonTheme
+    Set-ButtonTheme
     Update-TitleBarBrushes
     Add-LogLine ('Theme: {0}' -f $(if ($isDark) { 'dark' } else { 'light' }))
 })
@@ -298,14 +319,14 @@ function Update-StatusBarSummary {
     param()
     $parts = @()
     if ($script:IsConnectedFromBg -and $global:Prefs.SiteCode) { $parts += "Connected to $($global:Prefs.SiteCode)" }
-    elseif (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) { $parts += 'Open Options to configure site code and SMS provider' }
+    elseif (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) { $parts += 'Open Options to configure site code and SMS Provider' }
     else { $parts += 'Ready. Click Refresh.' }
     if (@($script:RawDPs).Count -gt 0)          { $parts += ('{0} DPs' -f @($script:RawDPs).Count) }
     if (@($script:RawContent).Count -gt 0)      { $parts += ('{0} content' -f @($script:RawContent).Count) }
     if (@($script:StatusIssueRows).Count -gt 0) { $parts += ('{0} issues' -f @($script:StatusIssueRows).Count) }
     if ($script:LastRefreshTime) { $parts += ('last refresh {0}' -f $script:LastRefreshTime.ToString('HH:mm:ss')) }
     Set-StatusText ($parts -join '   |   ')
-    # The site code and the SMS Provider show in their own boxes. SuiteCommon sets them to bold 14 pt.
+    # The site code and the SMS Provider values show in normal text. Their titles are bold 14 pt.
     if ($txtStatusSiteCode) { $txtStatusSiteCode.Text = [string]$global:Prefs.SiteCode }
     if ($txtStatusProvider) { $txtStatusProvider.Text = [string]$global:Prefs.SMSProvider }
 }
@@ -431,8 +452,8 @@ function Invoke-Refresh {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Posts work to bg runspace.')]
     param()
     if (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) {
-        Add-LogLine 'Refresh: site code and SMS provider must be set in Options first.'
-        Set-StatusText 'Open Options to configure site code and SMS provider, then refresh.'
+        Add-LogLine 'Refresh: site code and SMS Provider must be set in Options first.'
+        Set-StatusText 'Open Options to configure site code and SMS Provider, then refresh.'
         return
     }
     Initialize-BgRunspace
@@ -524,7 +545,10 @@ function Invoke-Refresh {
 
             # UI thread CM connect mirror so per-action cmdlets resolve.
             try { [void](Connect-CMSite -SiteCode $global:Prefs.SiteCode -SMSProvider $global:Prefs.SMSProvider) }
-            catch { Add-LogLine ('UI-thread CM connect: {0}' -f $_.Exception.Message) }
+            catch {
+                Write-Log ('UI-thread CM connect failed: {0}' -f $_.Exception.Message) -Level ERROR -Quiet
+                Add-LogLine 'The connection for the actions failed. The log file has the details.'
+            }
 
             Update-Filter
             Update-StatusBarSummary
@@ -648,6 +672,7 @@ function Show-BulkOpDialog {
     $dlg.Title = $Title
     Install-TitleBarDragFallback -Window $dlg
     Set-DialogTheme -Dialog $dlg
+    Set-DialogButtonTheme -Dialog $dlg -Name 'btnClose'
 
     $txtImpactHeader = $dlg.FindName('txtImpactHeader')
     $gridOps         = $dlg.FindName('gridOps')
@@ -752,8 +777,8 @@ $btnRedistribute.Add_Click({
 
 $btnRemoveFromDP.Add_Click({
     $sel = @($gridContent.SelectedItems)
-    if ($sel.Count -eq 0) { Add-LogLine 'Remove from DP: select one or more content rows first.'; return }
-    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove from DP: refresh first to establish a CM connection.'; return }
+    if ($sel.Count -eq 0) { Add-LogLine 'Remove From DP: select one or more content rows first.'; return }
+    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove From DP: refresh first to establish a CM connection.'; return }
     $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Remove Content From DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
@@ -899,11 +924,11 @@ function Show-OptionsDialog {
         <Grid Grid.Column="2" Grid.Row="0" Margin="20,16,20,16">
             <StackPanel x:Name="paneConnection" Visibility="Visible">
                 <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="Bold" Margin="0,0,0,10"/>
-                <TextBlock Text="Site Code" FontSize="11" FontWeight="Bold" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
-                <TextBox x:Name="txtSiteCode" FontSize="14" FontWeight="Bold" Padding="6,4,6,4"
+                <TextBlock Text="Site Code" FontSize="14" FontWeight="Bold" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
+                <TextBox x:Name="txtSiteCode" FontSize="12" Padding="6,4,6,4"
                          Controls:TextBoxHelper.Watermark="e.g. MCM" Width="120" HorizontalAlignment="Left"/>
-                <TextBlock Text="SMS Provider FQDN" FontSize="11" FontWeight="Bold" Margin="0,12,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
-                <TextBox x:Name="txtSmsProvider" FontSize="14" FontWeight="Bold" Padding="6,4,6,4"
+                <TextBlock Text="SMS Provider" FontSize="14" FontWeight="Bold" Margin="0,12,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
+                <TextBox x:Name="txtSmsProvider" FontSize="12" Padding="6,4,6,4"
                          Controls:TextBoxHelper.Watermark="e.g. cm01.contoso.com"/>
                 <TextBlock Text="The app uses these values for the ConfigMgr drive and the WMI distribution status queries. The account that runs the app needs read access to the SMS Provider. It needs write access to redistribute or remove content."
                            FontSize="11" TextWrapping="Wrap" Margin="0,16,0,0"
@@ -933,6 +958,7 @@ function Show-OptionsDialog {
     $dlg.Owner = $window
     Install-TitleBarDragFallback -Window $dlg
     Set-DialogTheme -Dialog $dlg
+    Set-DialogButtonTheme -Dialog $dlg -Name 'btnCatConnection', 'btnCatAbout', 'btnCancel'
     $btnCatConnection = $dlg.FindName('btnCatConnection')
     $btnCatAbout      = $dlg.FindName('btnCatAbout')
     $paneConnection   = $dlg.FindName('paneConnection')
@@ -990,7 +1016,7 @@ $window.Add_Loaded({
     Update-TitleBarBrushes
     Update-ActionBarVisibility
     Update-StatusBarSummary
-    Add-LogLine 'DP Content Manager ready. Configure Site / Provider in Options, then click Refresh.'
+    Add-LogLine 'DP Content Manager ready. Configure Site Code / SMS Provider in Options, then click Refresh.'
 })
 
 # Suite update notice: one shared daily lookup across the suite tools; the launcher installs.

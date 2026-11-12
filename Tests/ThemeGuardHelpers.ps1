@@ -101,3 +101,35 @@ function Get-XamlUiText {
         }
     }
 }
+
+# One text per catch block that sends raw exception text to a UI sink.
+# UI sinks: Add-LogLine, Set-StatusText, the themed dialogs, and a UI property such as Text or Detail.
+# The log file (Write-Log) and a state field that the UI does not show are allowed.
+function Get-RawExceptionToUi {
+    param([string]$Path, [string]$ScriptText)
+    $ast = if ($ScriptText) { [System.Management.Automation.Language.Parser]::ParseInput($ScriptText, [ref]$null, [ref]$null) } else { [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$null) }
+    $rawPattern = '\$_(?![A-Za-z0-9_])|\$PSItem|\$Error\b|\.Exception\b|\$ex\b|\$err\b'
+    $uiProperty = @('Text', 'Content', 'Detail', 'ToolTip', 'Title', 'Header', 'ErrorMsg')
+    $sinkCommand = @('Add-LogLine', 'Set-StatusText', 'Show-ThemedMessage', 'Show-ConfirmDialog', 'Show-Dialog')
+    $found = @()
+    foreach ($c in @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CatchClauseAst] }, $true))) {
+        foreach ($cmd in @($c.Body.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true))) {
+            $name = [string]$cmd.GetCommandName()
+            if ($sinkCommand -contains $name -and $cmd.Extent.Text -match $rawPattern) { $found += ('line {0}: {1}' -f $cmd.Extent.StartLineNumber, $cmd.Extent.Text) }
+        }
+        foreach ($as in @($c.Body.FindAll({ param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and $n.Left -is [System.Management.Automation.Language.MemberExpressionAst] }, $true))) {
+            $member = [string]$as.Left.Member.Value
+            if ($uiProperty -contains $member -and $as.Right.Extent.Text -match $rawPattern) { $found += ('line {0}: {1}' -f $as.Extent.StartLineNumber, $as.Extent.Text) }
+        }
+    }
+    return $found
+}
+
+# The title of a value box: the TextBlock that comes before it in the same panel (the rule of SuiteCommon).
+function Get-FieldTitleElement {
+    param($Box)
+    $prev = $Box.PreviousSibling
+    while ($prev -and $prev.NodeType -ne 'Element') { $prev = $prev.PreviousSibling }
+    if ($prev -and $prev.LocalName -in 'TextBlock', 'Label') { return $prev }
+    return $null
+}

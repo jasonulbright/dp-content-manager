@@ -18,7 +18,7 @@ None.
 
 | Message | Where | Cause | Fix |
 |---|---|---|---|
-| `Refresh: site code and SMS provider must be set in Options first.` | Log | The site code or the provider is empty. | Set both in **Options > Connection**. |
+| `Refresh: site code and SMS Provider must be set in Options first.` | Log | The site code or the provider is empty. | Set both in **Options > Connection**. |
 | `Refresh failed: Failed to connect to site <code> (provider <name>).` | Log | The console is not installed on this computer, or the provider name is wrong or not reachable, or `SMS_ADMIN_UI_PATH` does not point to the `bin\i386` folder of the console. | Check the provider name. Install the console. If it is installed, set `SMS_ADMIN_UI_PATH` to its `bin\i386` folder and start the tool again. |
 | `Refresh failed: The refresh failed.` | Log | The tool could not read the site. The log file has the system message. | Read the log file. Check the connection and the role. |
 | `<action>: select one or more content rows first.` | Log | No row is selected on the Content view. | Select rows. |

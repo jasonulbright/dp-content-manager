@@ -5,6 +5,7 @@ $script:AppConfig = @{
     Xaml          = 'MainWindow.xaml'
     OptionsButton = 'btnOptions'
     LogLabel      = 'lblLogOutput'
+    WorkflowButtons = @('btnRefresh', 'btnExportCsv', 'btnExportHtml', 'btnRedistribute', 'btnRemoveFromDP', 'btnValidate', 'btnRedistributeIssues', 'btnRemoveIssues')
     Views         = @(
         @{ Name = 'DPs';           Container = 'viewDPs';          Button = 'btnViewDPs' }
         @{ Name = 'Content';       Container = 'viewContent';      Button = 'btnViewContent' }

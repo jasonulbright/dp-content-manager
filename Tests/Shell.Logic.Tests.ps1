@@ -179,9 +179,9 @@ Describe 'Update-StatusBarSummary' {
     AfterAll { Remove-Variable -Name Prefs -Scope Global -ErrorAction SilentlyContinue }
 
     It 'says what to do when <Case>' -ForEach @(
-        @{ Case = 'the site code is missing';   Site = '';    Provider = 'cm01'; Expected = 'Open Options to configure site code and SMS provider' }
-        @{ Case = 'the provider is missing';    Site = 'MCM'; Provider = '';     Expected = 'Open Options to configure site code and SMS provider' }
-        @{ Case = 'both are missing';           Site = '';    Provider = '';     Expected = 'Open Options to configure site code and SMS provider' }
+        @{ Case = 'the site code is missing';   Site = '';    Provider = 'cm01'; Expected = 'Open Options to configure site code and SMS Provider' }
+        @{ Case = 'the provider is missing';    Site = 'MCM'; Provider = '';     Expected = 'Open Options to configure site code and SMS Provider' }
+        @{ Case = 'both are missing';           Site = '';    Provider = '';     Expected = 'Open Options to configure site code and SMS Provider' }
         @{ Case = 'both are set, not connected'; Site = 'MCM'; Provider = 'cm01'; Expected = 'Ready. Click Refresh.' }
     ) {
         $global:Prefs = @{ SiteCode = $Site; SMSProvider = $Provider }
