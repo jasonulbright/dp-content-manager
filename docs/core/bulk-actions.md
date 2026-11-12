@@ -8,7 +8,7 @@ The dialog shows the full list of (DP, content) pairs that the action touches. Y
 
 ## When to use it
 
-It opens when you select **Redistribute Failed...**, **Remove from DP...**, **Validate...**, **Redistribute Selected...** or **Remove Failures...**.
+It opens when you select **Redistribute Failed...**, **Remove From DP...**, **Validate...**, **Redistribute Selected...** or **Remove Failures...**.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ This guide selected **Close** in the previews. It did not run an action. The run
 | Message or symptom | Cause | Fix |
 |---|---|---|
 | No dialog opens. | The selection has no matching operations. | Select other rows. Read the log. |
-| A row shows FAIL. | The site refused the operation. | Read the **Detail** column. |
+| A row shows FAIL. | The site refused the operation. | Read the log file for the reason. The **Detail** column names the log. |
 
 ## Links
 

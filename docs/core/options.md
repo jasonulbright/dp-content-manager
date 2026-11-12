@@ -35,7 +35,9 @@ The page shows the version and a short description.
 
 ### Theme
 
-The **Dark Theme** switch at the bottom of the sidebar changes the theme. The tool keeps the choice.
+The **Dark Theme** switch at the bottom of the sidebar changes the theme. The tool keeps the choice. The theme changes colors only. The text size and weight stay the same.
+
+The status bar shows the site code and the SMS Provider in bold 14 pt text in both themes.
 
 ![The DPs view in the light theme](../images/light-dps.png)
 
