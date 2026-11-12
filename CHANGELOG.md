@@ -1,5 +1,25 @@
 ﻿# Changelog
 
+## [2026.11.12.0017] - 2026-11-12
+
+## 7 window and guide fixes that make the buttons and fields consistent
+
+### Fixed
+
+- Show white text on blue buttons in light mode.
+- Show a short message, not raw exception text, when an action fails.
+- Raise the dark-mode button border contrast to 3:1.
+
+### Changed
+
+- Use one shared themed style for every button.
+- Show the field titles of site code and provider in bold 14 pt, with normal values.
+
+### Added
+
+- Add guard tests for the button style, the contrast pairs and the exception text.
+- Retake the guide images.
+
 ## [2026.11.07.0016] - 2026-11-07
 
 ## 1 window-test guard that decides on one opt-in
