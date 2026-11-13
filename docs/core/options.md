@@ -27,6 +27,10 @@ Select **Options** in the sidebar.
 
 ![The Connection page](../images/options-connection.png)
 
+### Site in the footer
+
+The footer of the main window shows the site on the right, for example `Site MCM · cm01.contoso.com`. It shows `Site not set` while the site code or the provider is empty. The footer is read-only. Select the site text to open Options. You change the site code and the provider only here.
+
 ### About
 
 The page shows the version and a short description.
@@ -37,7 +41,7 @@ The page shows the version and a short description.
 
 The **Dark Theme** switch at the bottom of the sidebar changes the theme. The tool keeps the choice. The theme changes colors only. The text size and weight stay the same.
 
-The status bar shows the site code and the SMS Provider in bold 14 pt text in both themes.
+The footer shows the status text and the site in the same style in both themes. Only the colors change.
 
 ![The DPs view in the light theme](../images/light-dps.png)
 

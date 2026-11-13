@@ -115,8 +115,6 @@ $viewStatusIssues = $window.FindName('viewStatusIssues')
 
 $gridDPs          = $window.FindName('gridDPs')
 $txtDPDetail      = $window.FindName('txtDPDetail')
-$txtStatusSiteCode = $window.FindName('txtSiteCode')
-$txtStatusProvider = $window.FindName('txtSmsProvider')
 
 $gridContent       = $window.FindName('gridContent')
 $gridContentPerDP  = $window.FindName('gridContentPerDP')
@@ -152,6 +150,13 @@ function Set-StatusText {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Updates an in-window TextBlock only.')]
     param([Parameter(Mandatory)][string]$Text)
     $txtStatus.Text = $Text
+}
+
+function Sync-FooterSite {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Updates an in-window TextBlock only.')]
+    param()
+    try { Update-SuiteFooter -Window $window -SiteCode ([string]$global:Prefs.SiteCode) -SiteServer ([string]$global:Prefs.SMSProvider) }
+    catch { Write-Log ('Footer: {0}' -f $_.Exception.Message) -Level ERROR -Quiet; Add-LogLine 'The footer failed. The log file has the details.' }
 }
 
 # === Title-bar drag fallback (PS51-WPF-033): SuiteCommon owns the hook ===
@@ -326,9 +331,6 @@ function Update-StatusBarSummary {
     if (@($script:StatusIssueRows).Count -gt 0) { $parts += ('{0} issues' -f @($script:StatusIssueRows).Count) }
     if ($script:LastRefreshTime) { $parts += ('last refresh {0}' -f $script:LastRefreshTime.ToString('HH:mm:ss')) }
     Set-StatusText ($parts -join '   |   ')
-    # The site code and the SMS Provider values show in normal text. Their titles are bold 14 pt.
-    if ($txtStatusSiteCode) { $txtStatusSiteCode.Text = [string]$global:Prefs.SiteCode }
-    if ($txtStatusProvider) { $txtStatusProvider.Text = [string]$global:Prefs.SMSProvider }
 }
 
 # === Filter ===
@@ -552,6 +554,7 @@ function Invoke-Refresh {
 
             Update-Filter
             Update-StatusBarSummary
+            Sync-FooterSite
             $progressOverlay.Visibility = [System.Windows.Visibility]::Collapsed
             $btnRefresh.IsEnabled = $true
             Add-LogLine ('Refresh complete: {0} DPs, {1} content, {2} issues.' -f @($script:RawDPs).Count, @($script:RawContent).Count, @($script:StatusIssueRows).Count)
@@ -980,6 +983,7 @@ function Show-OptionsDialog {
         $global:Prefs.SiteCode    = $newSite
         $global:Prefs.SMSProvider = $newProvider
         Save-DpcmPreferences -Prefs $global:Prefs
+        Sync-FooterSite
         if ($changed) {
             Dispose-BgWork
             Close-SuiteBgRunspace -Runspace $script:BgRunspace
@@ -1016,6 +1020,9 @@ $window.Add_Loaded({
     Update-TitleBarBrushes
     Update-ActionBarVisibility
     Update-StatusBarSummary
+    try { [void](Initialize-SuiteFooter -Window $window -StatusName 'txtStatus' -OnOpenOptions { Show-OptionsDialog }) }
+    catch { Write-Log ('Footer: {0}' -f $_.Exception.Message) -Level ERROR -Quiet; Add-LogLine 'The footer failed. The log file has the details.' }
+    Sync-FooterSite
     Add-LogLine 'DP Content Manager ready. Configure Site Code / SMS Provider in Options, then click Refresh.'
 })
 

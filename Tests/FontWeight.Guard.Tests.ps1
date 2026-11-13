@@ -28,9 +28,7 @@ BeforeAll {
 
     # ---- Per-app configuration ------------------------------------------------
     # The exact text of a label that names a value field shown as read-only text.
-    $script:AllowedTitleText = @(
-        'Site Code', 'SMS Provider'
-    )
+    $script:AllowedTitleText = @()
     # The key of a style that only field titles take.
     $script:AllowedTitleStyleKey = @()
     # A style key that makes the selected tab header bold (it was bold before the theme change).
