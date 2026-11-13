@@ -923,7 +923,7 @@ function Show-OptionsDialog {
         <Border Grid.Column="1" Grid.Row="0" Background="{DynamicResource MahApps.Brushes.Gray8}"/>
         <Grid Grid.Column="2" Grid.Row="0" Margin="20,16,20,16">
             <StackPanel x:Name="paneConnection" Visibility="Visible">
-                <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <TextBlock Text="Site Code" FontSize="14" FontWeight="Bold" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                 <TextBox x:Name="txtSiteCode" FontSize="12" Padding="6,4,6,4"
                          Controls:TextBoxHelper.Watermark="e.g. MCM" Width="120" HorizontalAlignment="Left"/>
@@ -935,8 +935,8 @@ function Show-OptionsDialog {
                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
             </StackPanel>
             <StackPanel x:Name="paneAbout" Visibility="Collapsed">
-                <TextBlock Text="About" FontSize="13" FontWeight="Bold" Margin="0,0,0,10"/>
-                <TextBlock x:Name="txtAboutVersion" Text="DP Content Manager v1.2.1" FontSize="13" FontWeight="Bold"/>
+                <TextBlock Text="About" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="txtAboutVersion" Text="DP Content Manager v1.2.1" FontSize="13" FontWeight="SemiBold"/>
                 <TextBlock Text="Audit content distribution on your distribution points. The app shows totals for each distribution point and for each content object. It lists the content that is not in the Success state. It redistributes, removes and validates content in bulk. One WMI query gets the status of all content, which keeps the query count low."
                            FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"/>
                 <TextBlock Text="Author: Jason Ulbright. License: MIT."
