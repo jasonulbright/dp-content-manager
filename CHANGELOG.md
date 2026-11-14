@@ -1,4 +1,10 @@
-﻿# Changelog
+# Changelog
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.11.14.0019] - 2026-11-14
 
@@ -10,13 +16,19 @@
 - Use shared border and disabled-text styles for text boxes, combo boxes and grid headers.
 - Show test windows at 80,80 when SUITE_VISIBLE_WINDOWS is 1, for visible runs.
 
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.11.13.0018] - 2026-11-13
 
 ## 1 footer style for the status text and the site text
 
 ### Added
 
-- Show the site code and the SMS Provider in the footer as one text, for example `Site MCM · cm01.contoso.com`. The footer shows `Site not set` while a value is empty. Select the text to open Options.
+- Show the site code and the SMS Provider in the footer as one text, for example `Site MCM`, a middle dot, and `cm01.contoso.com`. The footer shows `Site not set` while a value is empty. Select the text to open Options.
 - Add a guard test for the footer: one status element, no font setting on it, the footer calls, and no editable site field outside Options.
 
 ### Changed
@@ -29,6 +41,12 @@
 
 - Show page headers, status and About text in the normal weight, not bold.
 - Add a guard test that fails when text other than a field title is bold.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.11.12.0017] - 2026-11-12
 
@@ -50,6 +68,12 @@
 - Add guard tests for the button style, the contrast pairs and the exception text.
 - Retake the guide images.
 
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.11.07.0016] - 2026-11-07
 
 ## 1 window-test guard that decides on one opt-in
@@ -58,6 +82,12 @@
 
 - Run window tests only when the SUITE_ALLOW_WINDOW_TESTS opt-in is set.
 - Remove the computer check from the window-test guard.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.11.07.0015] - 2026-11-07
 
@@ -73,6 +103,12 @@
 
 - Refresh the vendored SuiteCommon library to release 2026.11.07.0075.
 
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.11.07.0014] - 2026-11-07
 
 ## 3 fixes and a user guide
@@ -87,6 +123,12 @@
 
 - Add the user guide (docs/index.md) with images of the running window.
 - Add tools/guide-capture, one command that regenerates every image of the guide on a lab computer.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.11.06.0013] - 2026-11-06
 
@@ -104,6 +146,12 @@
 ### Added
 
 - Support -WhatIf and -Confirm in Invoke-RedistributeContent, Remove-ContentFromDP and Invoke-ContentValidation.
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.10.12.0012] - 2026-10-12
 
 ## 1 PowerShell 7 fix
@@ -112,6 +160,12 @@
 
 - Keep the PowerShell 7 module roots when the tool runs under PowerShell 7.
 
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.10.11.0011] - 2026-10-11
 
 ## 1 window fix
@@ -119,6 +173,12 @@
 ### Fixed
 
 - Double-click the title bar to maximize or restore the window.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.10.11.0010] - 2026-10-11
 
@@ -130,11 +190,23 @@
 
 All notable changes to DP Content Manager are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
+
 ## [2026.10.07.0009] - 2026-10-07
 
 ### Changed
 
 - Sync the shared SuiteCommon module to 2026.10.07.0049.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.09.21.0008] - 2026-09-21
 
@@ -145,6 +217,12 @@ All notable changes to DP Content Manager are documented in this file.
 ### Changed
 
 - Update the README screenshot.
+
+## [Unreleased]
+
+### Fixed
+
+- Make the PowerShell sources and the files they read plain ASCII, and add the encoding guard.
 
 ## [2026.09.21.0007] - 2026-09-21
 
@@ -211,8 +289,8 @@ All notable changes to DP Content Manager are documented in this file.
   (`Connect-CMSite`, `Disconnect-CMSite`, `Test-CMConnection`) now load
   from `Lib\SuiteCommon\`, shared across the tool suite and synced from
   the suite-core repository instead of hand-edited per repo. Behavior is
-  unchanged — same log format, same connection flow (globally scoped
-  CMSite PSDrive, `Get-CMSite` verification) — and the connection now
+  unchanged - same log format, same connection flow (globally scoped
+  CMSite PSDrive, `Get-CMSite` verification) - and the connection now
   survives a stale drive whose provider connection died: `Connect-CMSite`
   tears it down and rebuilds it instead of failing.
 - **Redistribution reads the connection via `Get-CMConnectionInfo`**

@@ -65,10 +65,10 @@ Describe 'Get-BulkDistributionStatus' {
     }
 
     It 'requires <Missing>' -ForEach @(
-        @{ Missing = 'SMSProvider'; Args = @{ SiteCode = 'MCM';  SMSProvider = '' } }
-        @{ Missing = 'SiteCode';    Args = @{ SiteCode = '';     SMSProvider = 'cm01' } }
+        @{ Missing = 'SMSProvider'; Params = @{ SiteCode = 'MCM';  SMSProvider = '' } }
+        @{ Missing = 'SiteCode';    Params = @{ SiteCode = '';     SMSProvider = 'cm01' } }
     ) {
-        { Get-BulkDistributionStatus @Args } | Should -Throw
+        { Get-BulkDistributionStatus @Params } | Should -Throw
     }
 }
 

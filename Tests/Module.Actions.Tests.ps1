@@ -1,4 +1,4 @@
-﻿#Requires -Modules Pester
+#Requires -Modules Pester
 # Write actions: redistribute, remove, validate. ConfigMgr and CIM are mocked.
 # Covers success, failure, partial failure, progress callback, WhatIf and hostile input.
 
@@ -128,7 +128,7 @@ Describe 'Invoke-RedistributeContent' {
         @{ Name = 'dp%1' }
         @{ Name = ('d' * 3000) }
         @{ Name = 'dp\..\x' }
-        @{ Name = 'dp-日本' }
+        @{ Name = ('dp-' + [char]0x65E5 + [char]0x672C) }
     ) {
         $global:Fx = @('dp1.contoso.com')
         $r = @(Invoke-RedistributeContent -PackageID 'MCM00001' -DPName $Name)
