@@ -1,4 +1,4 @@
-﻿#Requires -Modules Pester
+#Requires -Modules Pester
 # Logic of start-dpcontentmgr.ps1. The script cannot be dot-sourced (it opens
 # the window), so each function is cut out of its syntax tree and defined here,
 # with plain objects in place of the window controls.
@@ -290,7 +290,7 @@ Describe 'Preferences file' {
     }
 
     It 'round-trips the value <Value>' -ForEach @(
-        @{ Value = 'Ünï-日本' }
+        @{ Value = ('' + [char]0x00DC + 'n' + [char]0x00EF + '-' + [char]0x65E5 + [char]0x672C) }
         @{ Value = 'a "quoted" \ back\slash' }
         @{ Value = ('x' * 5000) }
     ) {

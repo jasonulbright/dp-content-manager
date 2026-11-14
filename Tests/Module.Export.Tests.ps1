@@ -1,4 +1,4 @@
-﻿#Requires -Modules Pester
+#Requires -Modules Pester
 # Export-ContentStatusCsv, Export-ContentStatusHtml, New-ContentStatusSummary.
 
 BeforeAll {
@@ -29,7 +29,7 @@ Describe 'Export-ContentStatusCsv' {
         @{ Name = 'comma';    Value = 'a,b' }
         @{ Name = 'quote';    Value = 'say "hi"' }
         @{ Name = 'newline';  Value = "line1`r`nline2" }
-        @{ Name = 'unicode';  Value = 'Ünï 日本語' }
+        @{ Name = 'unicode';  Value = ('' + [char]0x00DC + 'n' + [char]0x00EF + ' ' + [char]0x65E5 + [char]0x672C + [char]0x8A9E) }
         @{ Name = 'html';     Value = '<script>alert(1)</script>' }
         @{ Name = 'long';     Value = ('x' * 20000) }
         @{ Name = 'spaces';   Value = '  padded  ' }

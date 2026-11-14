@@ -1,4 +1,4 @@
-﻿#Requires -Modules Pester
+#Requires -Modules Pester
 # Content retrieval: every Get-* function, with the ConfigMgr cmdlets mocked.
 # Fixture values reach the mock bodies through $global:Fx, because a mock body
 # runs in the module scope and cannot see test-scope variables.
@@ -20,7 +20,7 @@ AfterAll {
 Describe 'Get-AllDistributionPoints' {
     It 'normalizes the server name from NetworkOSPath <Path>' -ForEach @(
         @{ Path = '\\dp1.contoso.com';    Expected = 'dp1.contoso.com' }
-        @{ Path = '\\DP-Ünï.contoso.com'; Expected = 'DP-Ünï.contoso.com' }
+        @{ Path = ('\\DP-' + [char]0x00DC + 'n' + [char]0x00EF + '.contoso.com'); Expected = ('DP-' + [char]0x00DC + 'n' + [char]0x00EF + '.contoso.com') }
         @{ Path = '\\a';                  Expected = 'a' }
         @{ Path = 'dp1.contoso.com';      Expected = '' }
         @{ Path = '';                     Expected = '' }
@@ -99,7 +99,7 @@ Describe 'Typed content getters <Fn>' -ForEach @(
     It 'keeps the hostile name verbatim' -ForEach @(
         @{ Name = "O'Brien ""Quoted"" <b>&amp;</b>" }
         @{ Name = ('x' * 5000) }
-        @{ Name = 'Ünïcödé 日本語 🙂' }
+        @{ Name = ('' + [char]0x00DC + 'n' + [char]0x00EF + 'c' + [char]0x00F6 + 'd' + [char]0x00E9 + ' ' + [char]0x65E5 + [char]0x672C + [char]0x8A9E + ' ' + [char]::ConvertFromUtf32(0x1F642)) }
         @{ Name = '..\..\Windows\System32' }
         @{ Name = '' }
     ) {
