@@ -17,7 +17,7 @@ function Get-KnownContrastDefect {
                 'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText',
                 'btnRedistributeIssues:DisabledText', 'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText',
                 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText', 'btnViewContent:DisabledText',
-                'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText', 'titlebar:inactive'
+                'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText'
             )
         }
         'light' {
@@ -26,9 +26,7 @@ function Get-KnownContrastDefect {
                 'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText', 'btnRefresh:DisabledText',
                 'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
                 'btnViewContent:DisabledText', 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText',
-                'cboStatusFilter:DisabledBorder', 'cboStatusFilter:DisabledText', 'cboStatusFilter:EnabledBorder',
-                'cboStatusFilter:EnabledText', 'titlebar:inactive', 'txtFilter:DisabledBorder',
-                'txtFilter:EnabledBorder'
+                'cboStatusFilter:DisabledText', 'cboStatusFilter:EnabledText'
             )
         }
     }
