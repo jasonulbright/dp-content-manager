@@ -15,6 +15,7 @@
 ### Changed
 
 - Sync the vendored SuiteCommon for the shared window test helpers.
+- Sync SuiteCommon for the 1 px dialog button borders and retake all 27 guide images.
 
 ## [2026.11.14.0020] - 2026-11-14
 
