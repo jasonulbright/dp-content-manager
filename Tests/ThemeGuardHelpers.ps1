@@ -159,3 +159,37 @@ function Get-HardColor {
         }
     }
 }
+# True when a UI title is in Title Case: each word starts with a capital letter or a digit, except the small words in the
+# middle. A word of capitals (CSV) and a word with a dot (cm01.contoso.com) pass. The text may end with dots.
+function Test-TitleCase {
+    param([string]$Text)
+    $clean = ($Text -replace '\.\.\.$', '').Trim()
+    if ([string]::IsNullOrWhiteSpace($clean)) { return $true }
+    $small = @('a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'per', 'by', 'at', 'as', 'but', 'nor', 'with', 'from')
+    $words = @($clean -split '\s+')
+    for ($i = 0; $i -lt $words.Count; $i++) {
+        $word = $words[$i].Trim(',', ':', '(', ')')
+        if (-not $word) { continue }
+        $edge = ($i -eq 0 -or $i -eq $words.Count - 1)
+        if (-not $edge -and ($small -contains $word)) { continue }
+        if ($word -cmatch '^v\d[\d.]*$') { continue }
+        if ($word -cnotmatch '^[A-Z0-9#<\[\(]') { return $false }
+    }
+    return $true
+}
+
+# The titles of a XAML document that must be in Title Case: button content, column headers, tab and group headers, window
+# titles, check box and radio button text, and the bold heading text blocks. A binding stays out.
+function Get-XamlTitle {
+    param([string]$Text)
+    [xml]$xml = $Text
+    foreach ($el in @($xml.SelectNodes('//*'))) {
+        $name = $el.LocalName
+        $value = ''
+        if ($name -in 'Button', 'CheckBox', 'RadioButton', 'ToggleButton') { $value = $el.GetAttribute('Content') }
+        elseif ($name -in 'DataGridTextColumn', 'DataGridCheckBoxColumn', 'DataGridTemplateColumn', 'GroupBox', 'TabItem', 'Expander') { $value = $el.GetAttribute('Header') }
+        elseif ($name -eq 'MetroWindow' -or $name -eq 'Window') { $value = $el.GetAttribute('Title') }
+        elseif ($name -eq 'TextBlock' -and $el.GetAttribute('FontWeight') -in 'Bold', 'SemiBold') { $value = $el.GetAttribute('Text') }
+        if ($value -and $value -notmatch '^\{') { $value }
+    }
+}

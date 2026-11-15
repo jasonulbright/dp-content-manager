@@ -613,6 +613,7 @@ function Show-BulkOpDialog {
             <Style x:Key="DialogAccentButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
 
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Gray2}"/>
                 <Setter Property="MinWidth" Value="120"/><Setter Property="Height" Value="32"/>
                 <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
                 <Setter Property="Margin" Value="0,0,8,0"/>
@@ -916,6 +917,7 @@ function Show-OptionsDialog {
             <Style x:Key="DialogAccentButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
 
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Gray2}"/>
                 <Setter Property="MinWidth" Value="90"/><Setter Property="Height" Value="32"/>
                 <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.IdealForeground}"/>
                 <Setter Property="Margin" Value="0,0,8,0"/>

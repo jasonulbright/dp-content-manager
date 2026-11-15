@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Add window tests for the hover, focus and pressed states of the buttons and for the title bar, text and border of the main window and every dialog, in both themes.
+- Add a Title Case check for the titles, headers and button texts in the XAML and the dialog titles of the script.
+
+### Fixed
+
+- Show the pressed state of the toolbar buttons with 4.5:1 text contrast in the dark theme.
+- Give the accent button of the Options and bulk operation dialogs a thin gray border, not one in the text color.
+
+### Changed
+
+- Sync the vendored SuiteCommon for the shared window test helpers.
+
 ## [2026.11.14.0020] - 2026-11-14
 
 ## 1 px gray border on every button in both themes

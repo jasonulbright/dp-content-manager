@@ -14,17 +14,13 @@ function Get-KnownContrastDefect {
     switch ($Theme) {
         'dark' {
             @(
-                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText',
-                'btnRedistributeIssues:DisabledText', 'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText',
-                'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText', 'btnViewContent:DisabledText',
+                'btnViewContent:DisabledText',
                 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText'
             )
         }
         'light' {
             @(
-                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnOptions:DisabledText',
-                'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText', 'btnRefresh:DisabledText',
-                'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
+                'btnOptions:DisabledText',
                 'btnViewContent:DisabledText', 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText',
                 'cboStatusFilter:DisabledText', 'cboStatusFilter:EnabledText'
             )
