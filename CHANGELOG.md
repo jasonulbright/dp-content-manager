@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Make the guide capture take the lab lock and keep C:\guide in place.
+
 ## [2026.11.14.0021] - 2026-11-14
 
 ## 27 guide images retaken with 1 px dialog button borders
