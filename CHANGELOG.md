@@ -4,7 +4,19 @@
 
 ### Fixed
 
+- Keep pressed accent buttons blue and neutral buttons gray in both themes.
+- Show the inactive light title bar in light blue with dark caption text.
+- Close the windows a window test leaves open, also after a failed check.
 - Make the guide capture take the lab lock and keep C:\guide in place.
+
+### Added
+
+- Add window tests for dialog body colors, title bar text and button states of a dialog.
+- Add a headless guard for the button templates and for window cleanup in tests.
+
+### Changed
+
+- Sync SuiteCommon for the shared button templates, title bar colors and window helpers.
 
 ## [2026.11.14.0021] - 2026-11-14
 

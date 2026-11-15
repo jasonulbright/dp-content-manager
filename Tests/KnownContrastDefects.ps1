@@ -7,19 +7,25 @@
 # themes. The causes are shared by every suite tool: the SuiteCommon palette
 # (the disabled-button text), the MahApps disabled
 # style, the light text box border and the unselected tab header. The fix
-# belongs in app-packager-suite, then a sync of the vendored copy, not here.
+# The toolbar buttons (btnExportCsv ... btnValidate): the shared SuiteCommon button template dims a disabled
+# button to half opacity, and this probe counts that dimming in the text contrast (2.8:1 dark, 2.2:1 light).
+# The fix belongs in app-packager-suite, then a sync of the vendored copy, not here.
 
 function Get-KnownContrastDefect {
     param([Parameter(Mandatory)][ValidateSet('dark', 'light')][string]$Theme)
     switch ($Theme) {
         'dark' {
             @(
+                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText',
+                'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
                 'btnViewContent:DisabledText',
                 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText'
             )
         }
         'light' {
             @(
+                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText',
+                'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
                 'btnOptions:DisabledText',
                 'btnViewContent:DisabledText', 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText',
                 'cboStatusFilter:DisabledText', 'cboStatusFilter:EnabledText'

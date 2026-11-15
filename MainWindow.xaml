@@ -63,31 +63,9 @@
 
             <Style x:Key="OptionsButtonStyle" TargetType="Button" BasedOn="{StaticResource ViewButtonStyle}"/>
 
-            <!-- Square button whose pressed state swaps the theme colors, so the text keeps 4.5:1 in both themes. -->
-            <ControlTemplate x:Key="AppSquareButtonTemplate" TargetType="ButtonBase">
-                <Border Name="SquareBd"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        SnapsToDevicePixels="True">
-                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      Margin="{TemplateBinding Padding}"
-                                      RecognizesAccessKey="True"
-                                      SnapsToDevicePixels="True"/>
-                </Border>
-                <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter TargetName="SquareBd" Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
-                    </Trigger>
-                    <Trigger Property="IsPressed" Value="True">
-                        <Setter TargetName="SquareBd" Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
-                        <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
-                    </Trigger>
-                </ControlTemplate.Triggers>
-            </ControlTemplate>
             <Style x:Key="SquareInlineButtonStyle" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Square}">
-                <Setter Property="Template" Value="{StaticResource AppSquareButtonTemplate}"/>
+                <!-- Set-ButtonTheme paints these toolbar buttons with the accent blue in the light theme, so they take the accent template. -->
+                <Setter Property="Template" Value="{DynamicResource SuiteAccentButtonTemplate}"/>
 
                 <Setter Property="BorderThickness" Value="1"/>
 
