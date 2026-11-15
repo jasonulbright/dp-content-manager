@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Treat disabled controls as exempt from 4.5:1 text contrast and require them to look dimmed.
+- Dim the disabled filter boxes, status filter and detail box by half opacity.
+
 ## [2026.11.15.0022] - 2026-11-15
 
 ## 27 guide images retaken with blue pressed buttons and the light blue inactive title bar

@@ -3,32 +3,22 @@
 # violation is not listed (a new defect) and when a listed one no longer happens
 # (remove it here). Run Show-ContrastViolations.ps1 to print the current list.
 #
-# Text must reach 4.5:1 and a control border 3:1, enabled and disabled, in both
-# themes. The causes are shared by every suite tool: the SuiteCommon palette
-# (the disabled-button text), the MahApps disabled
-# style, the light text box border and the unselected tab header. The fix
-# The toolbar buttons (btnExportCsv ... btnValidate): the shared SuiteCommon button template dims a disabled
-# button to half opacity, and this probe counts that dimming in the text contrast (2.8:1 dark, 2.2:1 light).
-# The fix belongs in app-packager-suite, then a sync of the vendored copy, not here.
+# Enabled text must reach 4.5:1 and an enabled control border 3:1, in both themes. A disabled control is
+# exempt (WCAG 1.4.3: inactive user interface components have no contrast requirement), so DisabledText and
+# DisabledBorder are not measured against a target. A disabled control must still look dimmed: the window test
+# requires EnabledText / DisabledText >= 1.25 and DisabledText >= 1.5.
+# The causes of the entries below are shared by every suite tool: the MahApps style, the light text box
+# border and the unselected tab header. The fix belongs in app-packager-suite, then a sync of the vendored copy, not here.
 
 function Get-KnownContrastDefect {
     param([Parameter(Mandatory)][ValidateSet('dark', 'light')][string]$Theme)
     switch ($Theme) {
         'dark' {
-            @(
-                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText',
-                'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
-                'btnViewContent:DisabledText',
-                'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText'
-            )
+            @()
         }
         'light' {
             @(
-                'btnExportCsv:DisabledText', 'btnExportHtml:DisabledText', 'btnRedistribute:DisabledText', 'btnRedistributeIssues:DisabledText',
-                'btnRefresh:DisabledText', 'btnRemoveFromDP:DisabledText', 'btnRemoveIssues:DisabledText', 'btnValidate:DisabledText',
-                'btnOptions:DisabledText',
-                'btnViewContent:DisabledText', 'btnViewDPs:DisabledText', 'btnViewStatusIssues:DisabledText',
-                'cboStatusFilter:DisabledText', 'cboStatusFilter:EnabledText'
+                'cboStatusFilter:EnabledText'
             )
         }
     }
