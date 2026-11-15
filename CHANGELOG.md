@@ -2,15 +2,19 @@
 
 ## [Unreleased]
 
+## [2026.11.14.0021] - 2026-11-14
+
+## 27 guide images retaken with 1 px dialog button borders
+
 ### Added
 
-- Add window tests for the hover, focus and pressed states of the buttons and for the title bar, text and border of the main window and every dialog, in both themes.
-- Add a Title Case check for the titles, headers and button texts in the XAML and the dialog titles of the script.
+- Add window tests for button states and window chrome in both themes.
+- Add a Title Case check for XAML titles, headers, button texts and dialog titles.
 
 ### Fixed
 
-- Show the pressed state of the toolbar buttons with 4.5:1 text contrast in the dark theme.
-- Give the accent button of the Options and bulk operation dialogs a thin gray border, not one in the text color.
+- Show the pressed toolbar buttons with 4.5:1 text contrast in the dark theme.
+- Give the accent button of the Options and bulk dialogs a thin gray border.
 
 ### Changed
 
