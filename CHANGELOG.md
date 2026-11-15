@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2026.11.15.0022] - 2026-11-15
+
+## 27 guide images retaken with blue pressed buttons and the light blue inactive title bar
+
 ### Fixed
 
 - Keep pressed accent buttons blue and neutral buttons gray in both themes.
