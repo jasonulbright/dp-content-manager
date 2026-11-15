@@ -6,7 +6,7 @@
 BeforeDiscovery {
     # Every other test file that can open a window must carry the guard.
     $script:WindowTestFiles = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.Tests.ps1' -File |
-            Where-Object { $_.Name -ne 'WindowGuard.Tests.ps1' -and (Get-Content -LiteralPath $_.FullName -Raw) -match 'Invoke-WpfSta|New-WpfWindow|ShowDialog|\.Show\(\)' } |
+            Where-Object { $_.Name -notin 'WindowGuard.Tests.ps1', 'WindowCleanup.Guard.Tests.ps1' -and (Get-Content -LiteralPath $_.FullName -Raw) -match 'Invoke-WpfSta|New-WpfWindow|ShowDialog|\.Show\(\)' } |
             ForEach-Object { @{ Name = $_.Name; Path = $_.FullName } })
 }
 
