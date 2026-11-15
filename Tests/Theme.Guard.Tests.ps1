@@ -332,3 +332,39 @@ Describe 'No hard-coded color in a style or a template' {
         ($found -join ' ') | Should -Match '#555555'
     }
 }
+Describe 'Titles are in Title Case' {
+    It 'recognizes Title Case' {
+        Test-TitleCase 'Redistribute Failed...' | Should -BeTrue
+        Test-TitleCase 'Remove From DP...' | Should -BeTrue
+        Test-TitleCase 'Export CSV' | Should -BeTrue
+        Test-TitleCase 'Configuration Manager Connection' | Should -BeTrue
+        Test-TitleCase 'Status issues' | Should -BeFalse
+        Test-TitleCase 'Export csv' | Should -BeFalse
+    }
+
+    It 'has Title Case for every button, header and window title in <_.Source>' -ForEach @(Get-XamlDocument | Where-Object { $_.Source -notlike 'SuiteCommon.psm1*' }) {
+        @(Get-XamlTitle -Text $_.Text | Where-Object { -not (Test-TitleCase $_) }) | Should -BeNullOrEmpty
+    }
+
+    It 'finds titles to check in the main window and in the dialogs' {
+        $docs = @(Get-XamlDocument)
+        @(Get-XamlTitle -Text @($docs | Where-Object { $_.Source -eq 'MainWindow.xaml' })[0].Text).Count | Should -BeGreaterThan 10
+        @($docs | Where-Object { $_.Source -like 'start-dpcontentmgr.ps1 here-string*' }).Count | Should -BeGreaterOrEqual 2
+    }
+
+    It 'has Title Case in the title of every bulk operation dialog of the script' {
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $script:RepoRoot 'start-dpcontentmgr.ps1'), [ref]$null, [ref]$null)
+        $calls = @($ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] -and $n.GetCommandName() -eq 'Show-BulkOpDialog' }, $true))
+        $calls.Count | Should -BeGreaterThan 3
+        $bad = foreach ($call in $calls) {
+            $els = @($call.CommandElements)
+            for ($i = 0; $i -lt $els.Count - 1; $i++) {
+                if ($els[$i] -is [System.Management.Automation.Language.CommandParameterAst] -and $els[$i].ParameterName -in 'Title', 'ActionVerb' -and $els[$i + 1] -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
+                    $t = [string]$els[$i + 1].Value
+                    if (-not (Test-TitleCase $t)) { $t }
+                }
+            }
+        }
+        @($bad) | Should -BeNullOrEmpty
+    }
+}
