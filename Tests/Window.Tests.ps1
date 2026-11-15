@@ -196,7 +196,7 @@ Describe 'Contrast <Theme>' -ForEach @(@{ Theme = 'dark' }, @{ Theme = 'light' }
         $violations = New-Object System.Collections.Generic.List[string]
         foreach ($v in ($script:Measured['{0}|1440x900' -f $Theme])) {
             foreach ($c in $v.Interactive) {
-                foreach ($metric in 'EnabledText', 'DisabledText', 'EnabledBorder', 'DisabledBorder') {
+                foreach ($metric in 'EnabledText', 'EnabledBorder') {
                     $value = $c.$metric
                     if ($null -eq $value) { continue }
                     $min = if ($metric -like '*Text') { 4.5 } else { 3.0 }
@@ -217,5 +217,18 @@ Describe 'Contrast <Theme>' -ForEach @(@{ Theme = 'dark' }, @{ Theme = 'light' }
         $fixed = @($known | Where-Object { $found -notcontains $_ })
         $new | Should -BeNullOrEmpty -Because ('a new contrast violation appeared: ' + ($new -join ', '))
         $fixed | Should -BeNullOrEmpty -Because ('a known defect is fixed: remove it from Get-KnownContrastDefect: ' + ($fixed -join ', '))
+    }
+
+    It 'dims every disabled control clearly and keeps it readable (disabled controls are exempt from 4.5:1)' {
+        $bad = @()
+        foreach ($v in ($script:Measured['{0}|1440x900' -f $Theme])) {
+            foreach ($c in $v.Interactive) {
+                if ($null -eq $c.EnabledText -or $null -eq $c.DisabledText) { continue }
+                $step = $c.EnabledText / [math]::Max($c.DisabledText, 0.01)
+                if ($step -lt 1.25 -or $c.DisabledText -lt 1.5) { $bad += ('{0}: enabled {1}, disabled {2}, step {3}' -f $c.Name, $c.EnabledText, $c.DisabledText, [math]::Round($step, 2)) }
+            }
+        }
+        $bad = @($bad | Sort-Object -Unique)
+        $bad | Should -BeNullOrEmpty -Because ('a disabled control must look dimmed (enabled / disabled >= 1.25) and stay readable (disabled >= 1.5): ' + ($bad -join '; '))
     }
 }
