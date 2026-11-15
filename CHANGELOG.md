@@ -11,11 +11,13 @@
 
 ### Added
 
+- Add Sync-ReadmeImages.ps1 and a guard test for the README images.
 - Add window tests for dialog body colors, title bar text and button states of a dialog.
 - Add a headless guard for the button templates and for window cleanup in tests.
 
 ### Changed
 
+- Map the README image to the capture and retake all guide images.
 - Sync SuiteCommon for the shared button templates, title bar colors and window helpers.
 
 ## [2026.11.14.0021] - 2026-11-14
