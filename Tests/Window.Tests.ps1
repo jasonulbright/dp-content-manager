@@ -1,7 +1,7 @@
 #Requires -Modules Pester
 # Window tests. The main window and the dialogs that the script builds from XAML
 # text are opened off screen on an STA thread, in both themes and at 1024x720 and
-# 1440x900, and measured. The app-specific names live in WindowConfig.ps1.
+# the work area of the session, and measured. The app-specific names live in WindowConfig.ps1.
 
 BeforeDiscovery {
     . "$PSScriptRoot\WindowConfig.ps1"
@@ -10,7 +10,8 @@ BeforeDiscovery {
     $script:WindowGuard = Test-WindowTestsAllowed
     if (-not $script:WindowGuard.Allowed -and -not $env:SUITE_WINDOW_GUARD_REPORTED) { Write-Host ('Window tests skipped: {0}.' -f $script:WindowGuard.Reason) }
     $script:Matrix = foreach ($dark in $true, $false) {
-        foreach ($size in @(@(1024, 720), @(1440, 900))) {
+        $design = Get-DesignSize
+        foreach ($size in @(@(1024, 720), @($design.W, $design.H))) {
             @{ Dark = $dark; Theme = $(if ($dark) { 'dark' } else { 'light' }); W = $size[0]; H = $size[1]; Size = ('{0}x{1}' -f $size[0], $size[1]) }
         }
     }
@@ -48,10 +49,11 @@ BeforeAll {
                 $n -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $n.Value -match '^\s*<Controls:MetroWindow'
             }, $true) | ForEach-Object { $_.Value })
 
+    $script:Design = Get-DesignSize
     $script:Measured = @{}
     foreach ($case in @(
-            @{ Dark = $true; W = 1024; H = 720 }, @{ Dark = $true; W = 1440; H = 900 },
-            @{ Dark = $false; W = 1024; H = 720 }, @{ Dark = $false; W = 1440; H = 900 })) {
+            @{ Dark = $true; W = 1024; H = 720 }, @{ Dark = $true; W = $script:Design.W; H = $script:Design.H },
+            @{ Dark = $false; W = 1024; H = 720 }, @{ Dark = $false; W = $script:Design.W; H = $script:Design.H })) {
         $key = '{0}|{1}x{2}' -f $(if ($case.Dark) { 'dark' } else { 'light' }), $case.W, $case.H
         $case.Config = $script:AppConfig
         $script:Measured[$key] = Invoke-WpfSta -Arguments $case -Script {
@@ -180,21 +182,21 @@ Describe 'Layout <Theme> <Size>' -ForEach $script:Matrix -Skip:(-not $script:Win
 
 Describe 'Contrast <Theme>' -ForEach @(@{ Theme = 'dark' }, @{ Theme = 'light' }) -Skip:(-not $script:WindowGuard.Allowed) {
     It 'shows every text at 4.5:1 (3:1 for large text) in the <View> view, except the listed known defects' -ForEach $script:ViewCases {
-        $m = ($script:Measured['{0}|1440x900' -f $Theme] | Where-Object View -eq $View)
+        $m = ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key] | Where-Object View -eq $View)
         $m.Text.Count | Should -BeGreaterThan 3
         $known = @(Get-KnownContrastDefect -Theme $Theme)
         $bad = $m.Text | Where-Object { $min = if ($_.Size -ge 24 -or ($_.Bold -and $_.Size -ge 18.66)) { 3.0 } else { 4.5 }; $_.Ratio -lt $min -and ($known -notcontains ('text:{0}' -f $_.Text)) }
         $bad | ForEach-Object { '{0} "{1}" {2} on {3} = {4}' -f $_.Name, $_.Text, $_.Foreground, $_.Backdrop, $_.Ratio } | Should -BeNullOrEmpty
     }
     It 'keeps the title text readable on the active title bar' {
-        $tb = ($script:Measured['{0}|1440x900' -f $Theme] | Select-Object -First 1).TitleBar
+        $tb = ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key] | Select-Object -First 1).TitleBar
         $tb.Active | Should -BeGreaterOrEqual 4.5
     }
 
     It 'meets the standard on every control, except the listed known defects' {
         $known = Get-KnownContrastDefect -Theme $Theme
         $violations = New-Object System.Collections.Generic.List[string]
-        foreach ($v in ($script:Measured['{0}|1440x900' -f $Theme])) {
+        foreach ($v in ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key])) {
             foreach ($c in $v.Interactive) {
                 foreach ($metric in 'EnabledText', 'EnabledBorder') {
                     $value = $c.$metric
@@ -204,13 +206,13 @@ Describe 'Contrast <Theme>' -ForEach @(@{ Theme = 'dark' }, @{ Theme = 'light' }
                 }
             }
         }
-        foreach ($v in ($script:Measured['{0}|1440x900' -f $Theme])) {
+        foreach ($v in ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key])) {
             foreach ($r in $v.Text) {
                 $min = if ($r.Size -ge 24 -or ($r.Bold -and $r.Size -ge 18.66)) { 3.0 } else { 4.5 }
                 if ($r.Ratio -lt $min) { [void]$violations.Add(('text:{0}' -f $r.Text)) }
             }
         }
-        $tbi = ($script:Measured['{0}|1440x900' -f $Theme] | Select-Object -First 1).TitleBar.Inactive
+        $tbi = ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key] | Select-Object -First 1).TitleBar.Inactive
         if ($null -ne $tbi -and $tbi -lt 4.5) { [void]$violations.Add('titlebar:inactive') }
         $found = @($violations | Sort-Object -Unique)
         $new = @($found | Where-Object { $known -notcontains $_ })
@@ -221,7 +223,7 @@ Describe 'Contrast <Theme>' -ForEach @(@{ Theme = 'dark' }, @{ Theme = 'light' }
 
     It 'dims every disabled control clearly and keeps it readable (disabled controls are exempt from 4.5:1)' {
         $bad = @()
-        foreach ($v in ($script:Measured['{0}|1440x900' -f $Theme])) {
+        foreach ($v in ($script:Measured['{0}|{1}' -f $Theme, $script:Design.Key])) {
             foreach ($c in $v.Interactive) {
                 if ($null -eq $c.EnabledText -or $null -eq $c.DisabledText) { continue }
                 $step = $c.EnabledText / [math]::Max($c.DisabledText, 0.01)
