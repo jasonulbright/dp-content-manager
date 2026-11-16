@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Retake all 27 guide images and the README image at the maximized 1080p work area.
 - Compact the layout for a 1080p work area: 36 px sidebar, 26 px controls, 24 px rows.
 - Open maximized on first start and share free height between grid and detail pane.
 - Make the guide capture maximize the window, sample contrast and layout, and list its images.
