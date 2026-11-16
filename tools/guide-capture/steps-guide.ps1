@@ -1,5 +1,5 @@
 $win = Start-App 'start-dpcontentmgr.ps1' 'DP Content Manager'
-Size-Win $win 1440 900
+Maximize-Win $win
 $win = Find-Top 'DP Content Manager' 10
 function Idle([string]$id = 'btnRefresh', [int]$sec = 300) { Start-Sleep -Seconds 2; $null = Wait-Until { $b = Get-El $win $id -Quiet; $b -and $b.Current.IsEnabled } $sec; Start-Sleep -Seconds 2 }
 function Rows($grid) { @((Get-El $win $grid).FindAll('Descendants', (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::DataItem)))) }
@@ -30,6 +30,12 @@ Section 'first run' {
 Section 'refresh' {
   Invoke-El (Get-El $win 'btnRefresh'); Start-Sleep -Seconds 3; Shot $win 'refresh-running'; Idle; Shot $win 'dps'
 }
+Section 'layout probe' {
+  Probe-View $win 'DPs' @('gridDPs')
+  Sample-El (Get-El $win 'btnRefresh') 'toolbar button normal'
+  Sample-El (Get-El $win 'btnViewDPs') 'sidebar active'
+  Sample-El (Get-El $win 'btnOptions') 'sidebar options'
+}
 Section 'dps detail' {
   $r = Rows 'gridDPs'; Log ('dp rows: ' + $r.Count); if ($r.Count) { Select-El $r[0]; Start-Sleep -Seconds 2; Shot $win 'dp-detail' }
   Set-Text (Get-El $win 'txtFilter') 'CM01'; Start-Sleep -Seconds 1; Shot $win 'dps-filter-text'; Set-Text (Get-El $win 'txtFilter') ''
@@ -42,6 +48,7 @@ Section 'exports' {
 Section 'content' {
   Invoke-El (Get-El $win 'btnViewContent'); Start-Sleep -Seconds 3; Shot $win 'content-before'
   Invoke-El (Get-El $win 'btnRefresh'); Idle; Shot $win 'content'
+  Probe-View $win 'Content' @('gridContent')
   $r = Rows 'gridContent'; Log ('content rows: ' + $r.Count);
   Set-Text (Get-El $win 'txtFilter') 'Doc'; Start-Sleep -Seconds 1; Shot $win 'content-filter-text'; Set-Text (Get-El $win 'txtFilter') ''
   Expand-El (Get-El $win 'cboStatusFilter'); Start-Sleep -Milliseconds 500; Shot $win 'content-filter-list' -Hover; Collapse-El (Get-El $win 'cboStatusFilter')
@@ -62,11 +69,18 @@ Section 'content actions' {
 Section 'status issues' {
   Invoke-El (Get-El $win 'btnViewStatusIssues'); Start-Sleep -Seconds 3; Shot $win 'issues-before'
   Invoke-El (Get-El $win 'btnRefresh'); Idle; Shot $win 'issues'
+  Probe-View $win 'Status Issues' @('gridStatusIssues')
   $r = Rows 'gridStatusIssues'; Log ('issue rows: ' + $r.Count)
 }
 Section 'tab order' { Invoke-El (Get-El $win 'btnViewDPs'); Focus-Win $win; Click-El (Get-El $win 'btnViewDPs'); 1..14 | ForEach-Object { Send-Keys '{TAB}'; $f = [System.Windows.Automation.AutomationElement]::FocusedElement; Log ('tab -> ' + $f.Current.AutomationId + ' / ' + $f.Current.Name) } }
+function Sample-States($El, [string]$Name, $Scope) {
+  Sample-El $El ($Name + ' normal')
+  Move-To $El; Start-Sleep -Milliseconds 700; Sample-El $El ($Name + ' hover')
+  Hold-Press $El; Sample-El $El ($Name + ' pressed'); Release-Press
+}
 Section 'light' {
   Toggle-El (Get-El $win 'toggleTheme'); Start-Sleep -Seconds 1
+  Sample-States (Get-El $win 'btnRefresh') 'toolbar-button' $win
   foreach ($v in @(@('DPs', 'light-dps'), @('Content', 'light-content'), @('StatusIssues', 'light-issues'))) { Invoke-El (Get-El $win ('btnView' + $v[0])); Start-Sleep -Seconds 2; Shot $win $v[1] }
   Invoke-El (Get-El $win 'btnOptions'); $d = Find-Last 'Options' 10; Shot $d 'light-options'; Focus-Win $d; Send-Keys '{ESC}'; Start-Sleep -Seconds 1
   Toggle-El (Get-El $win 'toggleTheme')

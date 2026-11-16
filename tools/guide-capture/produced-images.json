@@ -1,0 +1,32 @@
+{
+  "Count": 27,
+  "Images": [
+    "console-missing-refresh.png",
+    "content-actions-log.png",
+    "content-before.png",
+    "content-detail.png",
+    "content-filter-list.png",
+    "content-filter-text.png",
+    "content.png",
+    "dialog-remove-preview.png",
+    "dialog-validate-preview.png",
+    "dp-detail.png",
+    "dps-exported.png",
+    "dps-filter-list.png",
+    "dps-filter-text.png",
+    "dps.png",
+    "issues-before.png",
+    "issues.png",
+    "light-content.png",
+    "light-dps.png",
+    "light-issues.png",
+    "light-options.png",
+    "options-about.png",
+    "options-connection.png",
+    "options-empty.png",
+    "refresh-running.png",
+    "refresh-without-connection.png",
+    "start-first-run.png",
+    "start-reopen.png"
+  ]
+}
