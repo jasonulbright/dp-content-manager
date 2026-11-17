@@ -13,6 +13,10 @@
 
 - Add density, vacant area and guide image tests for the 1080p layout.
 
+### Fixed
+
+- Add a guard that every button of the vendored SuiteCommon dialogs takes ThemedButtonStyle, and vendor the dialogs that do.
+
 ## [2026.11.15.0023] - 2026-11-15
 
 ## 3 disabled controls now dim
