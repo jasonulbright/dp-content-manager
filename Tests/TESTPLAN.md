@@ -42,7 +42,6 @@ Window tests: `Window.Tests.ps1` opens windows only when `SUITE_ALLOW_WINDOW_TES
 
 - Contrast of disabled controls, the sidebar button border and the light text box border fails the standard (text 4.5:1, borders 3:1). The cause is the shared SuiteCommon palette and the MahApps disabled style. The window test lists each violation in `Tests/KnownContrastDefects.ps1`, fails on a new one, and fails when a listed one is fixed. The fix belongs in `app-packager-suite`.
 - The refresh timer, the busy overlay and the background runspace live inside `Invoke-Refresh`. They need a running window with a site and are covered by the lab run only.
-- The settings save in SuiteCommon is not atomic (`Set-Content` on the target file). The fix belongs in `app-packager-suite`.
 - Dialog windows are measured for structure and titles only. Their layout and contrast need the dialog to be shown with data.
 - The title bar of an inactive window misses 4.5:1 (listed as `titlebar:inactive`). The border of a disabled sidebar button is read from the button, not from the template border at half opacity.
 - Only the Content-view buttons Redistribute, Remove and Validate run against a real site in the lab test, through the module. The window click path is not driven.
