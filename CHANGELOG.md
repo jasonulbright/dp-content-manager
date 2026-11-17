@@ -8,6 +8,7 @@
 - Compact the layout for a 1080p work area: 36 px sidebar, 26 px controls, 24 px rows.
 - Open maximized on first start and share free height between grid and detail pane.
 - Make the guide capture maximize the window, sample contrast and layout, and list its images.
+- Drop the stale inactive title bar note from the test plan.
 
 ### Added
 
