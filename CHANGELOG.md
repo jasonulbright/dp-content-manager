@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2026.11.18.0024] - 2026-11-18
+
+## 12 changes: content reads with retry and notes, Cancel, 1080p layout
+
 ### Changed
 
 - Retake all 27 guide images and the README image at the maximized 1080p work area.
