@@ -11,7 +11,7 @@ function Preview-Dlg([string]$btn, [string]$shot) {
   Invoke-El (Get-El $win $btn); Start-Sleep -Seconds 4
   Log ('windows: ' + (WinNames))
   $c = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Window)
-  $d = @($root.FindAll('Descendants', $c)) | Where-Object { $_.Current.Name -notin 'DP Content Manager', 'Program Manager' -and $_.Current.Name -ne '' -and $_.Current.Name -notlike 'Administrator*' -and $_.Current.Name -notlike 'GlowWindow*' } | Select-Object -First 1
+  $d = @($root.FindAll('Descendants', $c)) | Where-Object { $_.Current.Name -notin 'DP Content Manager', 'Program Manager' -and $_.Current.Name -ne '' -and $_.Current.Name -notlike 'Administrator*' -and $_.Current.Name -notlike 'GlowWindow*' -and $_.Current.ProcessId -eq $win.Current.ProcessId } | Select-Object -First 1
   if (-not $d) { Log ('No dialog after ' + $btn + ': the selection has no matching operations.'); return $false }
   Shot $d $shot; Dump-Tree $d $shot
   $safe = @('btnCancel', 'btnClose') | ForEach-Object { Get-El $d $_ -Quiet } | Where-Object { $_ -and $_.Current.IsEnabled } | Select-Object -First 1
