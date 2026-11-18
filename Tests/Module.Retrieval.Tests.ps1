@@ -196,9 +196,30 @@ Describe 'Get-AllContentObjects' {
         $r.ContentType | Should -Not -Contain 'Package'
     }
 
-    It 'lets a getter failure reach the caller' {
+    It 'gives a note for a type that fails for good and still loads the other six' {
         Mock Get-ContentBootImages { throw 'boot image query failed' } -ModuleName DPContentMgrCommon
-        { Get-AllContentObjects } | Should -Throw '*boot image query failed*'
+        $state = [hashtable]::Synchronized(@{ Notes = (New-Object System.Collections.ArrayList); Step = ''; Cancel = $false })
+        $r = @(Get-AllContentObjects -State $state)
+        $r.Count | Should -Be 6
+        $r.ContentType | Should -Not -Contain 'Boot Image'
+        $state['Notes'].Count | Should -Be 1
+        $state['Notes'][0] | Should -Match "Content of type 'Boot Image' failed after 1 attempt.*boot image query failed"
+    }
+
+    It 'retries a transient fault of one type and gives no note' {
+        $global:Fx = @{ Hit = 0 }
+        Mock Get-ContentOSImages { $global:Fx.Hit++; if ($global:Fx.Hit -eq 1) { throw 'The operation has timed out.' }; [PSCustomObject]@{ ContentType = 'OS Image'; PackageID = 'P5' } } -ModuleName DPContentMgrCommon
+        $state = [hashtable]::Synchronized(@{ Notes = (New-Object System.Collections.ArrayList); Step = ''; Cancel = $false })
+        @(Get-AllContentObjects -State $state).Count | Should -Be 7
+        $state['Notes'].Count | Should -Be 0
+        $global:Fx.Hit | Should -Be 2
+    }
+
+    It 'shows the type in the progress and stops when the cancel flag is set' {
+        $global:Fx = @{ State = [hashtable]::Synchronized(@{ Notes = (New-Object System.Collections.ArrayList); Step = ''; Cancel = $false }) }
+        Mock Get-ContentPackages { $global:Fx.State['Cancel'] = $true; [PSCustomObject]@{ ContentType = 'Package'; PackageID = 'P2' } } -ModuleName DPContentMgrCommon
+        { Get-AllContentObjects -State $global:Fx.State } | Should -Throw '*cancelled*'
+        $global:Fx.State['Step'] | Should -Be 'Loading content objects: SU Deployment Pkg...'
     }
 
     It 'flattens a getter that returns several objects' {
@@ -215,5 +236,21 @@ Describe 'Get-ContentDistributionStatus' {
 
     It 'requires a content object' {
         { Get-ContentDistributionStatus -ContentObject $null } | Should -Throw
+    }
+}
+
+Describe 'Content getters report errors' {
+    It 'has no SilentlyContinue in the content getters' {
+        $text = Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'Module\DPContentMgrCommon.psm1') -Raw
+        $m = [regex]::Match($text, '(?s)function Get-ContentApplications.*?function Get-AllContentObjects')
+        $m.Success | Should -BeTrue
+        $m.Value | Should -Not -Match 'SilentlyContinue'
+        $m.Value | Should -Not -Match '\$all \+='
+    }
+
+    It 'asks the cmdlets for the fast form where it exists' {
+        Mock Get-CMApplication { } -ModuleName DPContentMgrCommon
+        $null = Get-ContentApplications
+        Should -Invoke Get-CMApplication -ModuleName DPContentMgrCommon -ParameterFilter { $Fast -and $ErrorAction -eq 'Stop' }
     }
 }

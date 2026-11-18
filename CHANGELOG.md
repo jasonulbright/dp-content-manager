@@ -13,6 +13,7 @@
 ### Added
 
 - Add density, vacant area and guide image tests for the 1080p layout.
+- Add a Cancel button to the progress overlay of the load: it stops the running read without blocking the window, drops the background runspace and leaves the data of the last load as it was.
 
 ### Fixed
 
@@ -20,6 +21,7 @@
 - Add a guard that every button of the vendored SuiteCommon dialogs takes ThemedButtonStyle, and vendor the dialogs that do.
 - Vendor SuiteCommon with the atomic settings save: the settings file is written to a temp file and replaced in one step, so a failed write cannot leave it truncated.
 - Capture tool lock follows D-16: the lock text is owner|pid|start, a lock is stale only after 30 minutes with no running owner process, a live owner lock is never removed, a removed lock is reported, and the holder refreshes it.
+- Read every content type with an error that is not silent: a transient fault is retried, a type that fails for good gives one note and the other types still load (the Applications, driver package and package reads use the fast form of the cmdlet); the content list no longer grows by array copy.
 
 ## [2026.11.15.0023] - 2026-11-15
 
