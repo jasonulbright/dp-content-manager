@@ -324,7 +324,7 @@
                                   ResizeDirection="Rows"/>
 
                     <TextBox x:Name="txtDPDetail" Grid.Row="2" Style="{StaticResource DetailTextStyle}"
-                             Text="Select a DP to see its content totals and storage analysis."/>
+                             Text="Select a distribution point to see its content totals and storage analysis."/>
                 </Grid>
 
                 <!-- ============================================================ -->

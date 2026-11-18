@@ -4,7 +4,7 @@ The DPs view shows one row for each distribution point.
 
 ## What it does
 
-Each row shows a status glyph, the DP name, the site, the total content, the number installed, in progress and failed, the percent OK and whether the DP is a pull DP. The pane below the grid shows the content roll-up of the selected DP and an estimate of its content size. The estimate is the sum of the source sizes of the content that has a status row on the DP, failed rows included. It is not the disk capacity or the free space of the DP.
+Each row shows a status glyph, the distribution point name, the site, the total content, the number installed, in progress and failed, the percent OK and whether the distribution point is a pull-distribution point. The pane below the grid shows the content roll-up of the selected distribution point and an estimate of its content size. The estimate is the sum of the source sizes of the content that has a status row on the distribution point, failed rows included. It is not the disk capacity or the free space of the distribution point.
 
 ## When to use it
 
@@ -16,20 +16,20 @@ Use it to see which distribution points have problems and how much content each 
 
 ## Steps
 
-### Read the roll-up
+### View the roll-up
 
 1. Select **DPs** in the sidebar and select **Refresh**.
-2. Read the grid. A check mark means that the DP is healthy.
+2. Review the grid. A check mark means that the distribution point is healthy.
 
 ![The DPs view](../images/dps.png)
 
-3. Select a row. The pane shows the roll-up and the size of the content on the DP.
+3. Select a row. The pane shows the roll-up and the size of the content on the distribution point.
 
-![The detail of a DP](../images/dp-detail.png)
+![The detail of a distribution point](../images/dp-detail.png)
 
 ### Filter the view
 
-1. Type text in the filter box. The grid matches the DP name.
+1. Type text in the filter box. The grid matches the distribution point name.
 2. Select a status in the list: **All**, **Healthy only**, **Has failures** or **Has in-progress**.
 
 ![The filter text CM01](../images/dps-filter-text.png)

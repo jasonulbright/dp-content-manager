@@ -4,17 +4,17 @@ This page shows how to start DP Content Manager, set the connection and load the
 
 ## What it does
 
-The tool reads the distribution status of all content on all distribution points of a Configuration Manager site with one query. It shows the data as a roll-up for each DP, a roll-up for each content object and a list of the problems. It can redistribute failed content, remove content from DPs and validate content, after you review the list.
+The tool reads the distribution status of all content on all distribution points of a Configuration Manager site with one query. It shows the data as a roll-up for each distribution point, a roll-up for each content object and a list of the problems. It can redistribute failed content, remove content from distribution points and validate content, after you review the list.
 
 ## When to use it
 
-Use it to find content that failed on a distribution point, to fix it in bulk, and to see how much content each DP holds.
+Use it to find content that failed on a distribution point, to fix it in bulk, and to see how much content each distribution point holds.
 
 ## Requirements
 
 - Windows 10, Windows 11 or Windows Server 2016 or later, PowerShell 5.1 and .NET Framework 4.7.2 or later.
 - The Configuration Manager console. The tool loads the `ConfigurationManager` PowerShell module of the console. Without the console, **Refresh** fails with a message in the log. See [Error messages](reference/error-messages.md).
-- Configuration Manager rights to read DP content, and to redistribute and remove content for the bulk actions. See [Permissions](reference/permissions.md).
+- Configuration Manager rights to read distribution point content, and to redistribute and remove content for the bulk actions. See [Permissions](reference/permissions.md).
 
 ## Steps
 

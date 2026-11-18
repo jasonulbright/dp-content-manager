@@ -7,11 +7,11 @@
 .DESCRIPTION
     Covers pure-logic exports: logging, status aggregation
     (ConvertTo-ContentStatusSummary, ConvertTo-DPStatusSummary), orphan
-    detection (Find-OrphanedContent), DP storage analysis, and the
+    detection (Find-OrphanedContent), distribution point storage analysis, and the
     plain-text status summary. CM-cmdlet integration (Connect-CMSite,
     Get-AllDistributionPoints, Get-AllContentObjects, Invoke-RedistributeContent,
-    Remove-ContentFromDP, etc.) requires a live ConfigMgr site and is
-    verified end-to-end on a CM-console-equipped client (CLIENT01)
+    Remove-ContentFromDP, and the other functions) requires a live ConfigMgr site and is
+    verified end-to-end on a device with the Configuration Manager console (CLIENT01)
     rather than mocked here.
 
 .EXAMPLE
