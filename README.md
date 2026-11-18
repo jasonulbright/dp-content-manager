@@ -52,13 +52,13 @@ The shell uses a sidebar layout with three views and an Options modal:
 
 ## Bulk Operation Safety
 
-Every destructive bulk action (Redistribute, Remove From DP, Validate) opens a preview dialog showing the **full (DP, Content) impact list** before running. Select **Run N operations** to run per-row with live OK / FAIL status and a short failure note for each row. The dialog's "Close" only enables AFTER the run completes. So an accidental "remove all failed across 200 distribution points" without seeing the list first is impossible.
+Every destructive bulk action (Redistribute, Remove From DP, Validate) opens a preview dialog showing the **full (DP, Content) impact list** before running. Select the run button (**<action> <n>**, for example **Remove 12**) to run each row with live OK / FAIL status and a short failure note for each row. The dialog's "Close" only enables AFTER the run completes. So an accidental "remove all failed across 200 distribution points" without seeing the list first is impossible.
 
 ## Scale-Optimized Status Queries
 
-Bulk status uses a single CIM query against `SMS_PackageStatusDistPointsSummarizer` instead of iterating per-content cmdlets, with O(n) hashtable aggregation in the module. Designed for 300+ distribution point environments where per-object iteration would take 40+ minutes.
+Bulk status uses a single CIM query against `SMS_PackageStatusDistPointsSummarizer` instead of iterating per-content cmdlets, with O(n) hashtable aggregation in the module. Designed for environments with 300 or more distribution points where per-object iteration would take 40+ minutes.
 
-> **Why CIM here:** No ConfigurationManager PowerShell cmdlet exposes the bulk content state of each distribution point across all content objects. The summarizer class is the only way to get this data in a single query. All other operations (content retrieval, validation, removal) use CM cmdlets.
+> **Why CIM here:** No ConfigurationManager PowerShell cmdlet exposes the bulk content state of each distribution point across all content objects. The summarizer class is the only way to get this data in a single query. All other operations (content retrieval, validation, removal) use ConfigMgr cmdlets.
 
 ## Filtering
 
@@ -93,7 +93,7 @@ dp-content-manager/
 - All bulk destructive operations are gated by the preview-before-commit dialog.
 - WMI bulk-status query is read-only.
 - Refresh uses a background runspace so the UI stays responsive during 30s+ enumerations on large sites.
-- Per-action ConfigMgr cmdlets (`Invoke-CMContentRedistribution`, `Remove-CMContentDistribution`, `Invoke-CMContentValidation`) all use the supported ConfigurationManager PowerShell module.
+- Removal and validation use ConfigMgr cmdlets (`Remove-CMContentDistribution`, `Invoke-CMContentValidation`) from the ConfigurationManager PowerShell module. Redistribution sets `RefreshNow` on the `SMS_DistributionPoint` class by using CIM.
 
 ## License
 

@@ -290,7 +290,7 @@ function Get-AllContentObjects {
 function Get-BulkDistributionStatus {
     <#
     .SYNOPSIS
-        Bulk WMI query for all content-to-distribution point status rows.
+        Bulk WMI query for the status rows of all content on all distribution points.
 
     .DESCRIPTION
         Uses SMS_PackageStatusDistPointsSummarizer for a single query that returns

@@ -6,7 +6,7 @@
     Sidebar navigation across three views (DPs, Content, Status Issues),
     inline action bar (Refresh, filter, status filter, exports), modal
     dialogs for Options, Redistribute, Remove From DP, Validate. Status
-    Issues view is a triage list of every distribution point and content row currently in
+    Issues view is a triage list of every (DP, content) pair currently in
     a non-OK state.
 
     Requirements:
@@ -14,7 +14,7 @@
       - .NET Framework 4.7.2+
       - MahApps.Metro DLLs in .\Lib\
       - DPContentMgrCommon module under .\Module\
-      - ConfigurationManager console (provides Get-CMDistributionPoint and the other ConfigMgr cmdlets)
+      - Configuration Manager console (provides the ConfigurationManager module with Get-CMDistributionPoint and the other cmdlets)
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
