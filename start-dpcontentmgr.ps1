@@ -128,6 +128,7 @@ $btnRemoveIssues        = $window.FindName('btnRemoveIssues')
 $txtIssueCount          = $window.FindName('txtIssueCount')
 
 $progressOverlay  = $window.FindName('progressOverlay')
+$btnCancelWork     = $window.FindName('btnCancelWork')
 $txtProgressTitle = $window.FindName('txtProgressTitle')
 $txtProgressStep  = $window.FindName('txtProgressStep')
 
@@ -173,7 +174,7 @@ $script:ViewButtons = @(
 $script:ActiveView = 'DPs'
 
 # Every button that is not a sidebar button takes the shared button theme (SuiteCommon Set-ButtonTheme).
-$script:WorkflowButtons = @($btnRefresh, $btnExportCsv, $btnExportHtml, $btnRedistribute, $btnRemoveFromDP, $btnValidate, $btnRedistributeIssues, $btnRemoveIssues)
+$script:WorkflowButtons = @($btnRefresh, $btnCancelWork, $btnExportCsv, $btnExportHtml, $btnRedistribute, $btnRemoveFromDP, $btnValidate, $btnRedistributeIssues, $btnRemoveIssues)
 
 Initialize-SuiteTheme -Window $window `
     -IsDarkGetter { [bool]$global:Prefs['DarkMode'] } `
@@ -452,6 +453,25 @@ function Dispose-BgWork {
     $script:BgInvokeHandle = $null
 }
 
+# Cancel stops the running load. The cancel flag lets a worker that reads it stop at its next step; the pipeline is stopped
+# without blocking the window, and the background runspace is dropped, so that the next load never queues behind a call
+# that is stuck on an unresponsive provider.
+function Invoke-CancelWork {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Stops ephemeral background work only.')]
+    param()
+    if (-not $script:BgPowerShell) { return }
+    if ($script:BgState) { $script:BgState['Cancel'] = $true }
+    Dispose-BgWork
+    Close-SuiteBgRunspace -Runspace $script:BgRunspace
+    $script:BgRunspace = $null
+    $script:BgState = $null
+    $script:IsConnectedFromBg = $false
+    $progressOverlay.Visibility = [System.Windows.Visibility]::Collapsed
+    $btnRefresh.IsEnabled = $true
+    Add-LogLine 'Cancelled. Nothing was changed.'
+    Set-StatusText 'Cancelled.'
+}$btnCancelWork.Add_Click({ Invoke-CancelWork })
+
 function Invoke-Refresh {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification='Posts work to bg runspace.')]
     param()
@@ -462,7 +482,7 @@ function Invoke-Refresh {
     }
     Initialize-BgRunspace
     Dispose-BgWork
-    $script:BgState = [hashtable]::Synchronized(@{ Step = 'Connecting...'; Done = $false; Result = $null; ErrorMsg = $null })
+    $script:BgState = [hashtable]::Synchronized(@{ Step = 'Connecting...'; Done = $false; Result = $null; ErrorMsg = $null; Notes = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList)) })
     $btnRefresh.IsEnabled = $false
     $txtProgressTitle.Text = 'Loading DP content status'
     $txtProgressStep.Text  = 'Connecting...'
@@ -487,7 +507,7 @@ function Invoke-Refresh {
             $dps = @(Get-AllDistributionPoints)
 
             $State.Step = 'Loading content objects (apps, packages, updates, images, drivers, TS refs)...'
-            $content = @(Get-AllContentObjects)
+            $content = @(Get-AllContentObjects -State $State)
 
             $State.Step = ('Querying bulk distribution status across {0} content x {1} DPs...' -f $content.Count, $dps.Count)
             $status = @(Get-BulkDistributionStatus -SMSProvider $SMSProvider -SiteCode $SiteCode)
@@ -533,6 +553,7 @@ function Invoke-Refresh {
             }
 
             $script:IsConnectedFromBg = $true
+            foreach ($note in @($script:BgState.Notes)) { Add-LogLine ('Refresh: {0}' -f $note) }
             $r = $script:BgState.Result
             $script:RawDPs     = @($r.DPs)
             $script:RawContent = @($r.Content)

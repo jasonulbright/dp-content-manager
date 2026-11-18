@@ -69,7 +69,7 @@ function Get-ContentApplications {
         Returns all applications with content properties.
     #>
     Write-Log "Loading applications..."
-    $apps = Get-CMApplication -ErrorAction SilentlyContinue
+    $apps = Get-CMApplication -Fast -ErrorAction Stop
 
     $results = foreach ($app in $apps) {
         [PSCustomObject]@{
@@ -92,7 +92,7 @@ function Get-ContentPackages {
         Returns all legacy packages with content properties.
     #>
     Write-Log "Loading packages..."
-    $pkgs = Get-CMPackage -Fast -ErrorAction SilentlyContinue
+    $pkgs = Get-CMPackage -Fast -ErrorAction Stop
 
     $results = foreach ($pkg in $pkgs) {
         [PSCustomObject]@{
@@ -115,7 +115,7 @@ function Get-ContentSUDPs {
         Returns all software update deployment packages.
     #>
     Write-Log "Loading software update deployment packages..."
-    $sudps = Get-CMSoftwareUpdateDeploymentPackage -ErrorAction SilentlyContinue
+    $sudps = Get-CMSoftwareUpdateDeploymentPackage -ErrorAction Stop
 
     $results = foreach ($sudp in $sudps) {
         [PSCustomObject]@{
@@ -138,7 +138,7 @@ function Get-ContentBootImages {
         Returns all boot images with content properties.
     #>
     Write-Log "Loading boot images..."
-    $bimgs = Get-CMBootImage -ErrorAction SilentlyContinue
+    $bimgs = Get-CMBootImage -ErrorAction Stop
 
     $results = foreach ($bi in $bimgs) {
         [PSCustomObject]@{
@@ -161,7 +161,7 @@ function Get-ContentOSImages {
         Returns all OS images with content properties.
     #>
     Write-Log "Loading OS images..."
-    $osimgs = Get-CMOperatingSystemImage -ErrorAction SilentlyContinue
+    $osimgs = Get-CMOperatingSystemImage -ErrorAction Stop
 
     $results = foreach ($osi in $osimgs) {
         [PSCustomObject]@{
@@ -184,7 +184,7 @@ function Get-ContentDriverPackages {
         Returns all driver packages with content properties.
     #>
     Write-Log "Loading driver packages..."
-    $dpkgs = Get-CMDriverPackage -ErrorAction SilentlyContinue
+    $dpkgs = Get-CMDriverPackage -Fast -ErrorAction Stop
 
     $results = foreach ($dpkg in $dpkgs) {
         [PSCustomObject]@{
@@ -212,7 +212,7 @@ function Get-ContentTaskSequenceRefs {
         in the content view.
     #>
     Write-Log "Loading task sequence references..."
-    $tslist = Get-CMTaskSequence -ErrorAction SilentlyContinue
+    $tslist = Get-CMTaskSequence -ErrorAction Stop
 
     $results = foreach ($ts in $tslist) {
         $refIds = @()
@@ -244,12 +244,21 @@ function Get-AllContentObjects {
         Optional string array to filter content types. If omitted, retrieves all types.
         Valid values: Application, Package, 'SU Deployment Pkg', 'Boot Image', 'OS Image',
                       'Driver Package', 'Task Sequence'
+
+    .PARAMETER State
+        Optional shared state of the background load (Notes, Step, Cancel). Every type is read through
+        Invoke-SuiteCMRead: a transient fault is retried, and a type that fails for good adds one note to
+        State.Notes while the other types still load. A failed read never looks like an empty type.
     #>
     param(
-        [string[]]$Types
+        [string[]]$Types,
+        [System.Collections.IDictionary]$State
     )
 
-    $all = @()
+    # Assigned in a statement, not from an if expression: an empty list would unroll to $null.
+    $notes = New-Object System.Collections.ArrayList
+    if ($State -and $null -ne $State['Notes']) { $notes = $State['Notes'] }
+    $all = New-Object 'System.Collections.Generic.List[object]'
     $typeMap = [ordered]@{
         'Application'       = { Get-ContentApplications }
         'Package'           = { Get-ContentPackages }
@@ -262,8 +271,12 @@ function Get-AllContentObjects {
 
     foreach ($typeName in $typeMap.Keys) {
         if ($Types -and $Types -notcontains $typeName) { continue }
-        $items = & $typeMap[$typeName]
-        if ($items) { $all += $items }
+        if ($State) {
+            $State['Step'] = 'Loading content objects: {0}...' -f $typeName
+            if ($State['Cancel']) { throw (New-Object System.OperationCanceledException('The content load was cancelled.')) }
+        }
+        $items = Invoke-SuiteCMRead -Description "Content of type '$typeName'" -Notes $notes -ScriptBlock $typeMap[$typeName]
+        if ($items) { $all.AddRange([object[]]@($items)) }
     }
 
     Write-Log "Total content objects: $($all.Count)"
