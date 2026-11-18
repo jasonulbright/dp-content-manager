@@ -4,7 +4,7 @@ The Status Issues view lists every (DP, content) pair that is in a non-OK state.
 
 ## What it does
 
-Each row shows a DP, a content object, the type, the state, the state number and the package ID. The counter shows the number of issue rows. Select several rows and use **Redistribute Selected...** or **Remove Failures...** to fix them in bulk.
+Each row shows a distribution point, a content object, the type, the state, the state number and the package ID. The counter shows the number of issue rows. Select several rows and use **Redistribute Selected...** or **Remove Failures...** to fix them in bulk.
 
 ## When to use it
 
@@ -17,7 +17,7 @@ Use it as the triage list after a refresh: it shows only the problems.
 
 ## Steps
 
-### Read the issues
+### View the issues
 
 1. Select **Status Issues** in the sidebar. The view is empty before the first refresh.
 
@@ -29,7 +29,7 @@ Use it as the triage list after a refresh: it shows only the problems.
 
 ### Filter the view
 
-1. Type text in the filter box. The grid matches the DP and the content name.
+1. Type text in the filter box. The grid matches the distribution point and the content name.
 2. Select a state in the list: **All**, **Failed only** or **In progress only**.
 
 ### Fix the issues

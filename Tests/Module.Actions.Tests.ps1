@@ -47,7 +47,7 @@ Describe 'Invoke-RedistributeContent' {
 
     It 'throws a plain message when no site is connected' {
         Mock Get-CMConnectionInfo { $null } -ModuleName DPContentMgrCommon
-        { Invoke-RedistributeContent -PackageID 'MCM00001' -DPName 'dp1' } | Should -Throw 'Not connected to a CM site; call Connect-CMSite first.'
+        { Invoke-RedistributeContent -PackageID 'MCM00001' -DPName 'dp1' } | Should -Throw 'Not connected to a ConfigMgr site; call Connect-CMSite first.'
         Should -Invoke Set-CimInstance -ModuleName DPContentMgrCommon -Times 0 -Exactly
     }
 

@@ -15,7 +15,7 @@ Use it to set up an account, or to find out why a read or an action is refused.
 | Action | Right |
 |---|---|
 | Start the tool | Read and write in the folder of the script. |
-| **Refresh** and all views | The Configuration Manager console on the computer, and read access to the SMS Provider and to DP content under your Configuration Manager role. |
+| **Refresh** and all views | The Configuration Manager console on the computer, and read access to the SMS Provider and to distribution point content under your Configuration Manager role. |
 | **Redistribute Failed...**, **Redistribute Selected...** | The right to redistribute content to distribution points. |
 | **Remove From DP...**, **Remove Failures...** | The right to remove content from distribution points. |
 | **Validate...** | The right to validate content on distribution points. |
@@ -34,7 +34,7 @@ Use it to set up an account, or to find out why a read or an action is refused.
 | Message or symptom | Cause | Fix |
 |---|---|---|
 | `Refresh failed:` | The account has no access to the provider, or the console is missing. | Check the role, the provider name and the console. |
-| A row shows FAIL. | The action failed. | Read the log file for the reason. Check the permissions only when it shows an access failure. |
+| A row shows FAIL. | The action failed. | Open the log file to see the reason. Check the permissions only when it shows an access failure. |
 
 ## Links
 

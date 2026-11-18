@@ -17,8 +17,8 @@ It opens when you select **Redistribute Failed...**, **Remove From DP...**, **Va
 
 ## Steps
 
-1. Read the text at the top: `You are about to <action> <n> (DP, Content) pair(s). Review the list below, then click "<action> <n>" to proceed.`
-2. Read the list. The columns are **Result**, **DP**, **Content**, **PackageID** and **Detail**.
+1. View the text at the top: `You are about to <action> <n> (DP, Content) pair(s). Review the list below, then select "<action> <n>" to proceed.`
+2. Review the list. The columns are **Result**, **DP**, **Content**, **PackageID** and **Detail**.
 
 ![The Validate preview](../images/dialog-validate-preview.png)
 
@@ -44,8 +44,8 @@ This guide selected **Close** in the previews. It did not run an action. The run
 
 | Message or symptom | Cause | Fix |
 |---|---|---|
-| No dialog opens. | The selection has no matching operations. | Select other rows. Read the log. |
-| A row shows FAIL. | The site refused the operation. | Read the log file for the reason. The **Detail** column names the log. |
+| No dialog opens. | The selection has no matching operations. | Select other rows. Review the log. |
+| A row shows FAIL. | The site refused the operation. | Open the log file to see the reason. The **Detail** column names the log. |
 
 ## Links
 

@@ -182,7 +182,7 @@ Describe 'Update-StatusBarSummary' {
         @{ Case = 'the site code is missing';   Site = '';    Provider = 'cm01'; Expected = 'Open Options to configure site code and SMS Provider' }
         @{ Case = 'the provider is missing';    Site = 'MCM'; Provider = '';     Expected = 'Open Options to configure site code and SMS Provider' }
         @{ Case = 'both are missing';           Site = '';    Provider = '';     Expected = 'Open Options to configure site code and SMS Provider' }
-        @{ Case = 'both are set, not connected'; Site = 'MCM'; Provider = 'cm01'; Expected = 'Ready. Click Refresh.' }
+        @{ Case = 'both are set, not connected'; Site = 'MCM'; Provider = 'cm01'; Expected = 'Ready. Select Refresh.' }
     ) {
         $global:Prefs = @{ SiteCode = $Site; SMSProvider = $Provider }
         Update-StatusBarSummary
@@ -206,7 +206,7 @@ Describe 'Update-StatusBarSummary' {
     It 'leaves a count out when it is zero' {
         $script:RawDPs = @(1)
         Update-StatusBarSummary
-        $script:StatusText | Should -Be 'Ready. Click Refresh.   |   1 DPs'
+        $script:StatusText | Should -Be 'Ready. Select Refresh.   |   1 DPs'
     }
 }
 

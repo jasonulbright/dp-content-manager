@@ -4,10 +4,10 @@
 
 .DESCRIPTION
     Import this module to get:
-      - Structured logging and CM site connection management via the
+      - Structured logging and ConfigMgr site connection management by using the
         vendored SuiteCommon module (Lib\SuiteCommon)
       - Distribution point and content object retrieval
-      - Bulk distribution status queries via WMI
+      - Bulk distribution status queries by using WMI
       - Redistribution, removal, and validation actions
       - Orphaned content detection and storage analysis
       - Export to CSV, HTML, and clipboard summary
@@ -21,7 +21,7 @@
 # ---------------------------------------------------------------------------
 # Shared core (vendored SuiteCommon)
 # ---------------------------------------------------------------------------
-# Logging (Initialize-Logging, Write-Log), CM connection (Connect-CMSite,
+# Logging (Initialize-Logging, Write-Log), ConfigMgr connection (Connect-CMSite,
 # Disconnect-CMSite, Test-CMConnection, Get-CMConnectionInfo), and settings
 # persistence come from the vendored copy at Lib\SuiteCommon\. -Global makes
 # the functions resolvable from the shell script and from this module alike;
@@ -290,18 +290,18 @@ function Get-AllContentObjects {
 function Get-BulkDistributionStatus {
     <#
     .SYNOPSIS
-        Bulk WMI query for all content-to-DP status rows.
+        Bulk WMI query for all content-to-distribution point status rows.
 
     .DESCRIPTION
         Uses SMS_PackageStatusDistPointsSummarizer for a single query that returns
-        all content distribution status across all DPs. Much faster than iterating
+        all content distribution status across all distribution points. Much faster than iterating
         Get-CMDistributionStatus per content object.
 
     .PARAMETER SMSProvider
         The SMS Provider server hostname.
 
     .PARAMETER SiteCode
-        The CM site code.
+        The ConfigMgr site code.
     #>
     param(
         [Parameter(Mandatory)][string]$SMSProvider,
@@ -351,7 +351,7 @@ function Get-BulkDistributionStatus {
 function Get-ContentDistributionStatus {
     <#
     .SYNOPSIS
-        Gets detailed distribution status for a single content object via CM cmdlet.
+        Gets detailed distribution status for a single content object by using a ConfigMgr cmdlet.
 
     .DESCRIPTION
         Used for drill-down detail, not bulk queries.
@@ -413,7 +413,7 @@ function ConvertTo-ContentStatusSummary {
 function ConvertTo-DPStatusSummary {
     <#
     .SYNOPSIS
-        Aggregates bulk status rows into per-DP summaries.
+        Aggregates bulk status rows into summaries for each distribution point.
 
     .DESCRIPTION
         Uses hashtable-based O(n) aggregation for performance at scale.
@@ -468,10 +468,10 @@ function Invoke-RedistributeContent {
         Redistributes content to specified distribution points.
 
     .DESCRIPTION
-        Sets RefreshNow on the SMS_DistributionPoint instance of each named DP.
-        A DP name matches its server name exactly, or as the short name of a
+        Sets RefreshNow on the SMS_DistributionPoint instance of each named distribution point.
+        A distribution point name matches its server name exactly, or as the short name of a
         fully qualified server name. 'dp1' never matches 'dp10'. Returns one
-        result per DP (PackageID, DPName, Success, Error); a failure on one DP
+        result for each distribution point (PackageID, DPName, Success, Error); a failure on one distribution point
         does not stop the others. Under -WhatIf it changes nothing and returns
         no result.
 
@@ -479,7 +479,7 @@ function Invoke-RedistributeContent {
         The content package ID to redistribute.
 
     .PARAMETER DPName
-        Array of DP server names to redistribute to.
+        Array of distribution point server names to redistribute to.
 
     .PARAMETER ProgressCallback
         Optional scriptblock called with (currentIndex, totalCount, dpName) for progress reporting.
@@ -495,7 +495,7 @@ function Invoke-RedistributeContent {
     $total = $DPName.Count
 
     $conn = Get-CMConnectionInfo
-    if (-not $conn) { throw 'Not connected to a CM site; call Connect-CMSite first.' }
+    if (-not $conn) { throw 'Not connected to a ConfigMgr site; call Connect-CMSite first.' }
 
     for ($i = 0; $i -lt $total; $i++) {
         $dp = $DPName[$i]
@@ -574,7 +574,7 @@ function Remove-ContentFromDP {
 function Invoke-ContentValidation {
     <#
     .SYNOPSIS
-        Triggers content validation for specified content on specified DPs.
+        Triggers content validation for specified content on specified distribution points.
 
     .DESCRIPTION
         Content validation is server-side and asynchronous. Results will appear
@@ -619,7 +619,7 @@ function Assert-ContentActionResult {
         Invoke-RedistributeContent, Remove-ContentFromDP and Invoke-ContentValidation
         report a failure in the result object and do not throw. A caller that treats
         "did not throw" as success (the bulk operation dialog) passes the result
-        through this function. The message lists each failed DP and its error.
+        through this function. The message lists each failed distribution point and its error.
         A null or empty result passes: a -WhatIf run returns no result.
     #>
     param(
@@ -641,11 +641,11 @@ function Assert-ContentActionResult {
 function Find-OrphanedContent {
     <#
     .SYNOPSIS
-        Identifies content on DPs that no longer has a matching content object in ConfigMgr.
+        Identifies content on distribution points that no longer has a matching content object in ConfigMgr.
 
     .DESCRIPTION
         Compares PackageIDs in status rows against known content objects.
-        Content present on DPs but absent from the content object list is orphaned.
+        Content present on distribution points but absent from the content object list is orphaned.
     #>
     param(
         [Parameter(Mandatory)]
@@ -688,10 +688,10 @@ function Find-OrphanedContent {
 function Get-DPStorageAnalysis {
     <#
     .SYNOPSIS
-        Calculates estimated content storage per DP.
+        Calculates estimated content storage for each distribution point.
 
     .DESCRIPTION
-        Cross-references status rows with content objects to sum SourceSize per DP.
+        Cross-references status rows with content objects to sum SourceSize for each distribution point.
         Returns results sorted by total size descending.
     #>
     param(
@@ -908,7 +908,7 @@ function Format-ContentSize {
 function ConvertTo-DPRows {
     <#
     .SYNOPSIS
-        Joins the DP list with the per-DP status and storage rollups into grid rows.
+        Joins the distribution point list with the status and storage rollups of each distribution point into grid rows.
     #>
     param(
         [AllowNull()][AllowEmptyCollection()]$DPs,

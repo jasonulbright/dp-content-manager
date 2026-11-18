@@ -6,7 +6,7 @@
     Sidebar navigation across three views (DPs, Content, Status Issues),
     inline action bar (Refresh, filter, status filter, exports), modal
     dialogs for Options, Redistribute, Remove From DP, Validate. Status
-    Issues view is a triage list of every DP x Content row currently in
+    Issues view is a triage list of every distribution point and content row currently in
     a non-OK state.
 
     Requirements:
@@ -14,7 +14,7 @@
       - .NET Framework 4.7.2+
       - MahApps.Metro DLLs in .\Lib\
       - DPContentMgrCommon module under .\Module\
-      - ConfigurationManager console (provides Get-CMDistributionPoint, etc.)
+      - ConfigurationManager console (provides Get-CMDistributionPoint and the other ConfigMgr cmdlets)
 
 .NOTES
     ScriptName : start-dpcontentmgr.ps1
@@ -328,7 +328,7 @@ function Update-StatusBarSummary {
     $parts = @()
     if ($script:IsConnectedFromBg -and $global:Prefs.SiteCode) { $parts += "Connected to $($global:Prefs.SiteCode)" }
     elseif (-not $global:Prefs.SiteCode -or -not $global:Prefs.SMSProvider) { $parts += 'Open Options to configure site code and SMS Provider' }
-    else { $parts += 'Ready. Click Refresh.' }
+    else { $parts += 'Ready. Select Refresh.' }
     if (@($script:RawDPs).Count -gt 0)          { $parts += ('{0} DPs' -f @($script:RawDPs).Count) }
     if (@($script:RawContent).Count -gt 0)      { $parts += ('{0} content' -f @($script:RawContent).Count) }
     if (@($script:StatusIssueRows).Count -gt 0) { $parts += ('{0} issues' -f @($script:StatusIssueRows).Count) }
@@ -395,7 +395,7 @@ $cboStatusFilter.Add_SelectionChanged({ Update-Filter })
 # === Detail panels ===
 $gridDPs.Add_SelectionChanged({
     $row = $gridDPs.SelectedItem
-    if (-not $row) { $txtDPDetail.Text = 'Select a DP to see its content totals and storage analysis.'; return }
+    if (-not $row) { $txtDPDetail.Text = 'Select a distribution point to see its content totals and storage analysis.'; return }
     $lines = @(
         ('DP:               {0}' -f $row.ServerName),
         ('Site:             {0}' -f $row.SiteCode),
@@ -484,7 +484,7 @@ function Invoke-Refresh {
     Dispose-BgWork
     $script:BgState = [hashtable]::Synchronized(@{ Step = 'Connecting...'; Done = $false; Result = $null; ErrorMsg = $null; Notes = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList)) })
     $btnRefresh.IsEnabled = $false
-    $txtProgressTitle.Text = 'Loading DP content status'
+    $txtProgressTitle.Text = 'Loading distribution point content status'
     $txtProgressStep.Text  = 'Connecting...'
     $progressOverlay.Visibility = [System.Windows.Visibility]::Visible
     Add-LogLine ('Refresh: site={0} provider={1}' -f $global:Prefs.SiteCode, $global:Prefs.SMSProvider)
@@ -568,10 +568,10 @@ function Invoke-Refresh {
             $gridStatusIssues.ItemsSource = $script:StatusIssueRows
             $txtIssueCount.Text = ('{0} issue rows' -f @($script:StatusIssueRows).Count)
 
-            # UI thread CM connect mirror so per-action cmdlets resolve.
+            # UI thread ConfigMgr connect mirror so per-action cmdlets resolve.
             try { [void](Connect-CMSite -SiteCode $global:Prefs.SiteCode -SMSProvider $global:Prefs.SMSProvider) }
             catch {
-                Write-Log ('UI-thread CM connect failed: {0}' -f $_.Exception.Message) -Level ERROR -Quiet
+                Write-Log ('UI-thread ConfigMgr connect failed: {0}' -f $_.Exception.Message) -Level ERROR -Quiet
                 Add-LogLine 'The connection for the actions failed. The log file has the details.'
             }
 
@@ -717,7 +717,7 @@ function Show-BulkOpDialog {
     $btnClose        = $dlg.FindName('btnClose')
 
     $opCount = @($Operations).Count
-    $txtImpactHeader.Text = ('You are about to {0} {1} (DP, Content) pair(s). Review the list below, then click "{0} {1}" to proceed.' -f $ActionVerb, $opCount)
+    $txtImpactHeader.Text = ('You are about to {0} {1} (DP, Content) pair(s). Review the list below, then select "{0} {1}" to proceed.' -f $ActionVerb, $opCount)
     $btnRun.Content = ('{0} {1}' -f $ActionVerb, $opCount)
 
     # Decorate ops with mutable Result/Detail fields for live status updates
@@ -804,7 +804,7 @@ function Get-OpsForContentToAllDPs {
 $btnRedistribute.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Redistribute Failed: select one or more content rows first.'; return }
-    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Redistribute Failed: refresh first to establish a CM connection.'; return }
+    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Redistribute Failed: refresh first to establish a ConfigMgr connection.'; return }
     $ops = @(Get-FailedOpsForContent -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Redistribute Failed Content' -ActionVerb 'Redistribute' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Invoke-RedistributeContent -PackageID $op.PackageID -DPName $op.DPName)
@@ -814,7 +814,7 @@ $btnRedistribute.Add_Click({
 $btnRemoveFromDP.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Remove From DP: select one or more content rows first.'; return }
-    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove From DP: refresh first to establish a CM connection.'; return }
+    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Remove From DP: refresh first to establish a ConfigMgr connection.'; return }
     $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Remove Content From DPs' -ActionVerb 'Remove' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Remove-ContentFromDP -PackageID $op.PackageID -DPName $op.DPName)
@@ -824,7 +824,7 @@ $btnRemoveFromDP.Add_Click({
 $btnValidate.Add_Click({
     $sel = @($gridContent.SelectedItems)
     if ($sel.Count -eq 0) { Add-LogLine 'Validate: select one or more content rows first.'; return }
-    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Validate: refresh first to establish a CM connection.'; return }
+    if (-not $script:IsConnectedFromBg) { Add-LogLine 'Validate: refresh first to establish a ConfigMgr connection.'; return }
     $ops = @(Get-OpsForContentToAllDPs -ContentSelection $sel)
     if (Show-BulkOpDialog -Title 'Validate Content on DPs' -ActionVerb 'Validate' -Operations $ops -ActionScript {
         param($op) Assert-ContentActionResult -Result (Invoke-ContentValidation -PackageID $op.PackageID -DPName $op.DPName)
@@ -1073,7 +1073,7 @@ $window.Add_Loaded({
     try { [void](Initialize-SuiteFooter -Window $window -StatusName 'txtStatus' -OnOpenOptions { Show-OptionsDialog }) }
     catch { Write-Log ('Footer: {0}' -f $_.Exception.Message) -Level ERROR -Quiet; Add-LogLine 'The footer failed. The log file has the details.' }
     Sync-FooterSite
-    Add-LogLine 'DP Content Manager ready. Configure Site Code / SMS Provider in Options, then click Refresh.'
+    Add-LogLine 'DP Content Manager ready. Configure Site Code / SMS Provider in Options, then select Refresh.'
 })
 
 # Suite update notice: one shared daily lookup across the suite tools; the launcher installs.
