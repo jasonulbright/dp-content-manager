@@ -2,6 +2,9 @@ param([string]$App)
 $ErrorActionPreference = 'Stop'
 $OutDir = 'C:\guide\ui\out'; New-Item -ItemType Directory $OutDir -Force | Out-Null
 $appDir = Join-Path 'C:\guide' $App
+# Record this runner in the ledger, so that the capture tool stops it by process id and never by a command-line pattern.
+$me = Get-Process -Id $PID
+('{0}|{1}' -f $me.Id, $me.StartTime.Ticks) | Add-Content -LiteralPath (Join-Path $PSScriptRoot 'run.pids')
 try {
     . C:\guide\ui\guilib.ps1
     # Settings that the orchestrator passes in (site code, SMS provider).
