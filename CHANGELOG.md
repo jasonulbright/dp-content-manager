@@ -7,6 +7,10 @@
 - Use ConfigMgr terms in the window text, the messages and the guide. The status line, the preview dialog and the log tell you to select a button.
 - Show a clearer message when the Configuration Manager console is not installed.
 
+### Fixed
+
+- The guide capture tool stops only the processes that it started, by process id. It no longer stops PowerShell processes by command-line pattern, which could end the window of another session. A new guard test fails when a tool script stops a process by a pattern.
+
 ## [2026.11.18.0024] - 2026-11-18
 
 ## 12 changes: content reads with retry and notes, Cancel, 1080p layout
