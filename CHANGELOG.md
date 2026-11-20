@@ -4,7 +4,7 @@
 
 ## [2026.11.20.0025] - 2026-11-20
 
-## 4 changes: ConfigMgr wording, console-missing message
+## 5 changes: ConfigMgr wording, console-missing message
 
 ### Changed
 
@@ -14,7 +14,7 @@
 
 ### Added
 
-- Add tooltips to 7 controls that had none: the filter box, the Cancel button of the progress overlay, the Run button of the preview dialog, the two category buttons of the Options dialog, and the site code and SMS Provider fields. A new guard test checks the tooltips of the audited controls.
+- Add tooltips to buttons and fields.
 
 ### Fixed
 
