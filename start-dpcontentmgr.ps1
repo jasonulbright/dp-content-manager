@@ -695,7 +695,7 @@ function Show-BulkOpDialog {
         <TextBlock x:Name="txtBulkStatus" Grid.Row="2" FontSize="11" Margin="0,8,0,0"
                    Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-            <Button x:Name="btnRun"   Content="" Style="{StaticResource DialogAccentButton}" IsDefault="True"/>
+            <Button x:Name="btnRun"   Content="" Style="{StaticResource DialogAccentButton}" IsDefault="True" ToolTip="Run the operation on each distribution point and content pair in the list. Needs write access to the SMS Provider."/>
             <Button x:Name="btnClose" Content="Close" Style="{StaticResource DialogButton}" IsCancel="True"/>
         </StackPanel>
     </Grid>
@@ -967,8 +967,8 @@ function Show-OptionsDialog {
         </Grid.RowDefinitions>
         <Border Grid.Column="0" Grid.Row="0" Padding="6,12,0,12">
             <StackPanel>
-                <Button x:Name="btnCatConnection" Content="Connection" Style="{StaticResource CategoryRowStyle}"/>
-                <Button x:Name="btnCatAbout"      Content="About"      Style="{StaticResource CategoryRowStyle}"/>
+                <Button x:Name="btnCatConnection" Content="Connection" Style="{StaticResource CategoryRowStyle}" ToolTip="Show the site code and the SMS Provider settings."/>
+                <Button x:Name="btnCatAbout"      Content="About"      Style="{StaticResource CategoryRowStyle}" ToolTip="Show the version, the description and the license of the app."/>
             </StackPanel>
         </Border>
         <Border Grid.Column="1" Grid.Row="0" Background="{DynamicResource MahApps.Brushes.Gray8}"/>
@@ -977,10 +977,12 @@ function Show-OptionsDialog {
                 <TextBlock Text="Configuration Manager Connection" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <TextBlock Text="Site Code" FontSize="14" FontWeight="Bold" Margin="0,4,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                 <TextBox x:Name="txtSiteCode" FontSize="12" Padding="6,4,6,4"
-                         Controls:TextBoxHelper.Watermark="e.g. MCM" Width="120" HorizontalAlignment="Left"/>
+                         Controls:TextBoxHelper.Watermark="e.g. MCM" Width="120" HorizontalAlignment="Left"
+                         ToolTip="Enter the three-character site code of the site to connect to. The app uses it for the ConfigMgr drive."/>
                 <TextBlock Text="SMS Provider" FontSize="14" FontWeight="Bold" Margin="0,12,0,2" Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                 <TextBox x:Name="txtSmsProvider" FontSize="12" Padding="6,4,6,4"
-                         Controls:TextBoxHelper.Watermark="e.g. cm01.contoso.com"/>
+                         Controls:TextBoxHelper.Watermark="e.g. cm01.contoso.com"
+                         ToolTip="Enter the name or the FQDN of the SMS Provider computer. The app queries it for the distribution status."/>
                 <TextBlock Text="The app uses these values for the ConfigMgr drive and the WMI distribution status queries. The account that runs the app needs read access to the SMS Provider. It needs write access to redistribute or remove content."
                            FontSize="11" TextWrapping="Wrap" Margin="0,16,0,0"
                            Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>

@@ -12,6 +12,10 @@
 - Tell users to select a button in the status line, preview dialog and log.
 - Show a clearer message when the Configuration Manager console is not installed.
 
+### Added
+
+- Add tooltips to 7 controls that had none: the filter box, the Cancel button of the progress overlay, the Run button of the preview dialog, the two category buttons of the Options dialog, and the site code and SMS Provider fields. A new guard test checks the tooltips of the audited controls.
+
 ### Fixed
 
 - Stop only the processes the guide capture tool started.

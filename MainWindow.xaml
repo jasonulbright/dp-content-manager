@@ -270,7 +270,8 @@
                              Padding="6,4,6,4"
                              Height="26"
                              Margin="8,0,8,0"
-                             Controls:TextBoxHelper.Watermark="Filter..."/>
+                             Controls:TextBoxHelper.Watermark="Filter..."
+                             ToolTip="Show only the rows that contain the text that you enter. The prompt in the box names what the view searches."/>
 
                     <ComboBox x:Name="cboStatusFilter"
                               Grid.Column="2"
@@ -448,7 +449,8 @@
                                    Margin="0,6,0,0"
                                    Foreground="{DynamicResource MahApps.Brushes.Gray1}"/>
                         <Button x:Name="btnCancelWork" Content="Cancel" Style="{StaticResource SquareInlineButtonStyle}"
-                                Width="100" Height="26" Margin="0,14,0,0" HorizontalAlignment="Center"/>
+                                Width="100" Height="26" Margin="0,14,0,0" HorizontalAlignment="Center"
+                                ToolTip="Stop the running load. The data of the last load stays as it was."/>
                     </StackPanel>
                 </Border>
             </Grid>
