@@ -2,14 +2,19 @@
 
 ## [Unreleased]
 
+## [2026.11.20.0025] - 2026-11-20
+
+## 4 changes: ConfigMgr wording, console-missing message
+
 ### Changed
 
-- Use ConfigMgr terms in the window text, the messages and the guide. The status line, the preview dialog and the log tell you to select a button.
+- Use ConfigMgr terms in window text, messages and guide.
+- Tell users to select a button in the status line, preview dialog and log.
 - Show a clearer message when the Configuration Manager console is not installed.
 
 ### Fixed
 
-- The guide capture tool stops only the processes that it started, by process id. It no longer stops PowerShell processes by command-line pattern, which could end the window of another session. A new guard test fails when a tool script stops a process by a pattern.
+- Stop only the processes the guide capture tool started.
 
 ## [2026.11.18.0024] - 2026-11-18
 
