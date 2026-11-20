@@ -7,6 +7,10 @@
 - Use ConfigMgr terms in the window text, the messages and the guide. The status line, the preview dialog and the log tell you to select a button.
 - Show a clearer message when the Configuration Manager console is not installed.
 
+### Added
+
+- Add tooltips to 7 controls that had none: the filter box, the Cancel button of the progress overlay, the Run button of the preview dialog, the two category buttons of the Options dialog, and the site code and SMS Provider fields. A new guard test checks the tooltips of the audited controls.
+
 ### Fixed
 
 - The guide capture tool stops only the processes that it started, by process id. It no longer stops PowerShell processes by command-line pattern, which could end the window of another session. A new guard test fails when a tool script stops a process by a pattern.
