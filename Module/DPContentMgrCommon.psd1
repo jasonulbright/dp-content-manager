@@ -38,6 +38,7 @@
         'ConvertTo-DPRows'
         'ConvertTo-ContentRows'
         'ConvertTo-StatusIssueRows'
+        'ConvertTo-ContentPerDPRows'
         'Find-OrphanedContent'
         'Get-DPStorageAnalysis'
 

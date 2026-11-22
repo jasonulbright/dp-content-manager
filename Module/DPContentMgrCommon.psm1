@@ -1009,7 +1009,41 @@ function ConvertTo-StatusIssueRows {
             State       = $row.State
             StatusName  = $row.StatusName
             PackageID   = $packageId
-            LastUpdate  = $row.LastUpdate
+            LastUpdate  = Format-StatusDate -Date $row.SummaryDate
+        }
+    })
+}
+
+function Format-StatusDate {
+    <#
+    .SYNOPSIS
+        Returns the date of a status row as text for a grid cell, or an empty string when the row has no date.
+    #>
+    param([AllowNull()]$Date)
+    if ($null -eq $Date -or ($Date -is [string] -and [string]::IsNullOrWhiteSpace($Date))) { return '' }
+    return ([datetime]$Date).ToString('yyyy-MM-dd HH:mm')
+}
+
+function ConvertTo-ContentPerDPRows {
+    <#
+    .SYNOPSIS
+        Returns the rows of the grid that lists the status of one content object on each distribution point.
+    .DESCRIPTION
+        Status is the raw status rows of Get-BulkDistributionStatus. The rows of one package id come out, with the
+        glyph, the state names and the date of the last status summary.
+    #>
+    param(
+        [AllowNull()][AllowEmptyCollection()]$Status,
+        [Parameter(Mandatory)][string]$PackageID
+    )
+    @(foreach ($row in @($Status)) {
+        if (-not $row -or $row.PackageID -ne $PackageID) { continue }
+        [PSCustomObject]@{
+            StatusGlyph = Get-StatusRowGlyph -State ([int]$row.State)
+            DPName      = $row.DPName
+            State       = $row.State
+            StatusName  = $row.StatusName
+            LastUpdate  = Format-StatusDate -Date $row.SummaryDate
         }
     })
 }

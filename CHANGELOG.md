@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Show the date of the last status in the Last Status column of the content grid. The column was empty for every row.
+
 ## [2026.11.20.0025] - 2026-11-20
 
 ## 5 changes: ConfigMgr wording, console-missing message

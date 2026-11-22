@@ -415,16 +415,7 @@ $gridDPs.Add_SelectionChanged({
 $gridContent.Add_SelectionChanged({
     $row = $gridContent.SelectedItem
     if (-not $row) { $gridContentPerDP.ItemsSource = $null; return }
-    $perDp = @($script:RawStatus | Where-Object { $_.PackageID -eq $row.PackageID } | ForEach-Object {
-        $glyph = Get-StatusRowGlyph -State ([int]$_.State)
-        [PSCustomObject]@{
-            StatusGlyph = $glyph
-            DPName      = $_.DPName
-            State       = $_.State
-            StatusName  = $_.StatusName
-            LastUpdate  = $_.LastUpdate
-        }
-    })
+    $perDp = @(ConvertTo-ContentPerDPRows -Status $script:RawStatus -PackageID ([string]$row.PackageID))
     $gridContentPerDP.ItemsSource = $perDp
 })
 
