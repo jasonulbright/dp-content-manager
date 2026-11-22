@@ -57,7 +57,9 @@ Section 'content actions' {
   # Find a content row that has DP status rows. Each action only opens a preview dialog, which is closed without a run.
   $picked = $null
   foreach ($x in (Rows 'gridContent')) {
-    Select-El $x; Start-Sleep -Milliseconds 700
+    # A row that cannot be selected (a row that the grid has not realized) is skipped.
+    try { Select-El $x } catch { Log ('skip row: ' + $_.Exception.Message); continue }
+    Start-Sleep -Milliseconds 700
     if (Preview-Dlg 'btnValidate' 'dialog-validate-preview') { $picked = $x; break }
   }
   if (-not $picked) { Log 'ERROR: no content row gave a Validate preview.'; return }

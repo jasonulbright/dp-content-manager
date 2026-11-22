@@ -71,7 +71,8 @@ if (Test-Path -LiteralPath $ledger) {
 }
 '@
 $repo = (Resolve-Path (Join-Path $here '..\..')).Path
-$app = Split-Path $repo -Leaf
+# The lab folder and the task carry the repository name, not the name of the folder that this copy runs from (a worktree name showed in the images).
+$app = 'dp-content-manager'
 $images = Join-Path $repo 'docs\images'
 . $CredentialScript
 $prefsFile = 'DPContentMgr.prefs.json'
@@ -165,6 +166,7 @@ try {
         $log = Join-Path $out 'run.log'
         if (-not (Test-Path $log)) { throw "The capture wrote no run.log: $($run.Steps)" }
         Get-Content $log | Where-Object { $_ -match '^\d\d:\d\d:\d\d\s+ERROR' } | ForEach-Object { Write-Warning $_; $failed.Add($_) }
+        Get-Content $log | Where-Object { $_ -match 'TOOLTIP still shown' } | ForEach-Object { Write-Warning $_ }
     }
     # A failed step stops the capture before any guide image is replaced.
     if ($failed.Count) { throw ("The capture failed. No image was replaced.`n" + ($failed -join "`n")) }
