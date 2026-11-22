@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [2026.11.22.0026] - 2026-11-22
+
+## 1 column fixed: Last Status shows the date
+
+### Fixed
+
+- Show the date in the Last Status column of the per-DP grid.
+- Leave stray tooltips out of guide capture images.
+- Name the guide capture lab folder neutrally.
+
 ### Fixed
 
 - Show the date of the last status in the Last Status column of the content grid. The column was empty for every row.
