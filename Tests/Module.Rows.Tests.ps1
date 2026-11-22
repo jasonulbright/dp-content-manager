@@ -190,3 +190,50 @@ Describe 'Refresh pipeline' {
         finally { Remove-CmStub -Name Get-CMDistributionPoint }
     }
 }
+
+Describe 'Format-StatusDate' {
+    It 'shows a date as year, month, day, hour and minute' {
+        Format-StatusDate -Date ([datetime]'2026-11-20 08:15:42') | Should -Be '2026-11-20 08:15'
+    }
+
+    It 'shows nothing for <Name>' -ForEach @(@{ Name = 'null'; Value = $null }, @{ Name = 'an empty string'; Value = '' }, @{ Name = 'white space'; Value = '  ' }) {
+        Format-StatusDate -Date $Value | Should -Be ''
+    }
+
+    It 'shows a text that is not a date as it is, and does not fail' {
+        Format-StatusDate -Date 'unknown' | Should -Be 'unknown'
+    }
+
+    It 'reads a date text' {
+        Format-StatusDate -Date '2026-11-20T08:15:00' | Should -Be '2026-11-20 08:15'
+    }
+}
+
+Describe 'ConvertTo-ContentPerDPRows' {
+    BeforeAll {
+        $script:Status = @(
+            [PSCustomObject]@{ PackageID = 'P1'; DPName = 'dp1'; State = 0; StatusName = 'Installed'; SummaryDate = [datetime]'2026-11-20 08:15:00' }
+            [PSCustomObject]@{ PackageID = 'P1'; DPName = 'dp2'; State = 3; StatusName = 'Install Failed'; SummaryDate = $null }
+            [PSCustomObject]@{ PackageID = 'P2'; DPName = 'dp1'; State = 1; StatusName = 'Install Pending'; SummaryDate = [datetime]'2026-11-21 09:00:00' }
+        )
+    }
+
+    It 'returns the rows of one package, with the glyph, the names and the date of the last status' {
+        $r = @(ConvertTo-ContentPerDPRows -Status $script:Status -PackageID 'P1')
+        $r.Count | Should -Be 2
+        $r[0].DPName | Should -Be 'dp1'
+        $r[0].StatusName | Should -Be 'Installed'
+        $r[0].State | Should -Be 0
+        $r[0].LastUpdate | Should -Be '2026-11-20 08:15'
+        [int]$r[1].StatusGlyph | Should -Be 0x2717
+        $r[1].LastUpdate | Should -Be ''
+    }
+
+    It 'matches the package id without regard to case' {
+        @(ConvertTo-ContentPerDPRows -Status $script:Status -PackageID 'p2').Count | Should -Be 1
+    }
+
+    It 'returns no rows for <Name>' -ForEach @(@{ Name = 'a package without status'; Id = 'P9'; Status = $null }, @{ Name = 'no status'; Id = 'P1'; Status = @() }) {
+        @(ConvertTo-ContentPerDPRows -Status $Status -PackageID $Id).Count | Should -Be 0
+    }
+}
