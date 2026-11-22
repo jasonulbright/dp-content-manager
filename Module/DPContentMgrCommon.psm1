@@ -1020,8 +1020,16 @@ function Format-StatusDate {
         Returns the date of a status row as text for a grid cell, or an empty string when the row has no date.
     #>
     param([AllowNull()]$Date)
-    if ($null -eq $Date -or ($Date -is [string] -and [string]::IsNullOrWhiteSpace($Date))) { return '' }
-    return ([datetime]$Date).ToString('yyyy-MM-dd HH:mm')
+    if ($null -eq $Date) { return '' }
+    if ($Date -is [datetime]) { $stamp = $Date }
+    else {
+        $text = [string]$Date
+        if ([string]::IsNullOrWhiteSpace($text)) { return '' }
+        $stamp = [datetime]::MinValue
+        # A value that is not a date shows as it is.
+        if (-not [datetime]::TryParse($text, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$stamp)) { return $text }
+    }
+    return $stamp.ToString('yyyy-MM-dd HH:mm', [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
 function ConvertTo-ContentPerDPRows {

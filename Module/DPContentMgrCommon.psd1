@@ -39,6 +39,7 @@
         'ConvertTo-ContentRows'
         'ConvertTo-StatusIssueRows'
         'ConvertTo-ContentPerDPRows'
+        'Format-StatusDate'
         'Find-OrphanedContent'
         'Get-DPStorageAnalysis'
 

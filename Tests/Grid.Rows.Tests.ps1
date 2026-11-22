@@ -34,3 +34,13 @@ Describe 'Grid data' {
         @($rows | Where-Object { -not [string]::IsNullOrEmpty([string]$_.$Path) }).Count | Should -BeGreaterThan 0 -Because "the column $Path of $Grid would show only empty cells"
     }
 }
+
+Describe 'Grid wiring in the start script' {
+    It 'builds the rows of the per-DP grid with ConvertTo-ContentPerDPRows, the function that the tests run' {
+        $text = Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'start-dpcontentmgr.ps1') -Raw
+        $handler = [regex]::Match($text, '(?s)\$gridContent\.Add_SelectionChanged\(\{.*?\}\)').Value
+        $handler | Should -Not -BeNullOrEmpty
+        $handler | Should -Match 'ConvertTo-ContentPerDPRows'
+        $handler | Should -Not -Match 'LastUpdate'
+    }
+}
