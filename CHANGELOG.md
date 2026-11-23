@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2026.11.22.0027] - 2026-11-22
+
+## 2 stores per site: site settings and reports
+
 ### Changed
 
 - Keep reports and site settings per site under the data folder.
