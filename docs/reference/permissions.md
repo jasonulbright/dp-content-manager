@@ -14,7 +14,7 @@ Use it to set up an account, or to find out why a read or an action is refused.
 
 | Action | Right |
 |---|---|
-| Start the tool | Read and write in the folder of the script. |
+| Start the tool | Read and write in the folder of the script, and in the data folder of the site under `%LOCALAPPDATA%\AppPackagerData`. |
 | **Refresh** and all views | The Configuration Manager console on the computer, and read access to the SMS Provider and to distribution point content under your Configuration Manager role. |
 | **Redistribute Failed...**, **Redistribute Selected...** | The right to redistribute content to distribution points. |
 | **Remove From DP...**, **Remove Failures...** | The right to remove content from distribution points. |

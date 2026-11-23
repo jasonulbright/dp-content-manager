@@ -92,4 +92,24 @@ Section 'files' {
   New-Item -ItemType Directory "$OutDir\files" -Force | Out-Null
   Get-ChildItem $appDir -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notlike '*\Lib\*' -and $_.FullName -notlike '*\Module\*' -and $_.Extension -in '.json', '.jsonl', '.log', '.csv', '.html', '.txt' } | ForEach-Object { Log ('file: ' + $_.FullName.Substring($appDir.Length) + ' ' + $_.Length); Copy-Item $_.FullName ("$OutDir\files\" + $_.Name) -Force }
 }
+Section 'site' {
+  # The launcher chooses the site. Start again with a chosen site (own data root below the app folder, set in main.ps1), show the
+  # read-only Site Code box with its tooltip, then let the launcher choose another site and show the footer note.
+  Stop-App 'start-dpcontentmgr.ps1'; Start-Sleep -Seconds 3
+  $env:APP_PACKAGER_SITE = $Capture.SiteCode
+  $win = Start-App 'start-dpcontentmgr.ps1' 'DP Content Manager'
+  Maximize-Win $win
+  $win = Find-Top 'DP Content Manager' 10
+  Invoke-El (Get-El $win 'btnOptions'); $d = Find-Last 'Options' 10
+  $box = Get-El $d 'txtSiteCode'
+  $r = $box.Current.BoundingRectangle; [void][NativeUi]::SetCursorPos([int]($r.X + $r.Width / 2), [int]($r.Y + $r.Height / 2)); Start-Sleep -Milliseconds 300
+  [NativeUi]::mouse_event(1, 2, 2, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 300; [NativeUi]::mouse_event(1, -2, -2, 0, [UIntPtr]::Zero); Start-Sleep -Milliseconds 2500
+  Shot $d 'options-site' -Hover -PadRight 260
+  Invoke-El (Get-El $d 'btnCancel'); Start-Sleep -Seconds 1
+  Import-Module (Join-Path $appDir 'Lib\SuiteCommon\SuiteCommon.psd1') -DisableNameChecking
+  [void](Set-SuiteActiveSite -SiteCode 'CD2' -DataRoot (Get-SuiteDataRoot))
+  Start-Sleep -Seconds 8
+  Shot-Strip $win 'footer-site-note' 40
+  Remove-Item -LiteralPath Env:APP_PACKAGER_SITE -ErrorAction SilentlyContinue
+}
 Stop-App 'start-dpcontentmgr.ps1'
