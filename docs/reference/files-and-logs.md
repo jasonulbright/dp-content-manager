@@ -26,7 +26,7 @@ None.
 | `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager\prefs.json` | The site code and the SMS Provider of the site. | You select **OK** in Options, or change the theme. |
 | `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager\reports\DPCM-<view>-<date>-<time>.csv` or `.html` | An export of the active view. | **Export CSV** or **Export HTML**. |
 
-With no site chosen, the tool uses `Reports\` beside the script for the exports and keeps the site settings in `DPContentMgr.prefs.json`. The first start for a site copies the old `Reports` files into the site folder and keeps the old files. See [Sites](../core/options.md#sites).
+With no site chosen (no launcher site and no saved site code), the tool uses `Reports\` beside the script for the exports and keeps the site settings in `DPContentMgr.prefs.json`. The first start for a site copies the old `Reports` files into the site folder and keeps the old files. See [Sites](../core/options.md#sites).
 
 ## Steps
 

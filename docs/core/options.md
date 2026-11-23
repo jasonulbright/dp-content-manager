@@ -22,7 +22,7 @@ Select **Options** in the sidebar.
 
 | Field | Meaning |
 |---|---|
-| **Site Code** | The site code, for example `MCM`. The field is read-only when the launcher chose a site. See [Sites](#sites). |
+| **Site Code** | The site code, for example `MCM`. The field is read-only when a site is chosen. See [Sites](#sites). |
 | **SMS Provider** | The server with the SMS Provider role. The tool uses it for the PSDrive root. |
 
 ![The Connection page](../images/options-connection.png)
@@ -33,7 +33,7 @@ The footer of the main window shows the site on the right, for example `Site MCM
 
 ### Sites
 
-The AppPackager Suite launcher chooses the site. When a site is chosen, **Site Code** is read-only. The tooltip says: The site is chosen in the AppPackager Suite launcher. Restart this tool after you change it. **SMS Provider** stays editable and is saved with the site.
+The AppPackager Suite launcher chooses the site. When a site is chosen, **Site Code** is read-only. The launcher chooses it. With no launcher, the `SiteCode` that an earlier start saved chooses it at the next start. The tooltip says: The site is chosen in the AppPackager Suite launcher. Restart this tool after you change it. **SMS Provider** stays editable and is saved with the site.
 
 The tool keeps its site data per site in `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager`, for example `sites\AB1\tools\dp-content-manager`. The site data are the site settings (`prefs.json`) and the `reports` folder. A site such as `CD2` has its own folder and shows none of the data of `AB1`.
 

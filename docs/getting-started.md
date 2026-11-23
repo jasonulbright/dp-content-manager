@@ -38,7 +38,7 @@ If you select **Refresh** before you set the connection, the log asks you to ope
 ### Set the connection
 
 1. Select **Options** in the sidebar.
-2. Type the **Site Code**, for example `MCM`. When the AppPackager Suite launcher chose a site, the field is read-only. See [Sites](core/options.md#sites).
+2. Type the **Site Code**, for example `MCM`. When a site is chosen, the field is read-only. The AppPackager Suite launcher chooses the site. See [Sites](core/options.md#sites).
 3. Type the **SMS Provider** name as a FQDN, for example `cm01.contoso.com`.
 4. Select **OK**. The right end of the footer shows the site, for example `Site MCM`, a middle dot, and `cm01.contoso.com`. The footer is read-only. Select the site text to open Options.
 

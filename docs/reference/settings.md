@@ -37,7 +37,7 @@ None.
 
 - The global files are in the folder of the script. Extract the tool to a folder that you can write to.
 - When no launcher chose a site, the `SiteCode` in `DPContentMgr.prefs.json` chooses the site. To change it, edit that file, or choose the site in the launcher.
-- The tool never changes the site code. Choose the site in the AppPackager Suite launcher and restart the tool.
+- While a site is chosen, the tool never changes the site code. Choose the site in the AppPackager Suite launcher and restart the tool.
 
 ## Troubleshooting
 
