@@ -32,6 +32,8 @@ The [user guide](docs/index.md) walks every view, dialog and setting with images
 3. Select **Options** on the sidebar and set Site Code and SMS Provider. The footer then shows the site at the right end, for example `Site MCM`, a middle dot, and `cm01.contoso.com`. The footer is read-only. Select the site text to open Options.
 4. Select **Refresh** to load distribution points, content, and bulk distribution status.
 
+The AppPackager Suite launcher chooses the site. The tool keeps its site settings and reports per site under `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager`, and the first start for a site copies the old data and keeps the old files.
+
 ## Layout
 
 The shell uses a sidebar layout with three views and an Options modal:
@@ -68,7 +70,7 @@ Bulk status uses a single CIM query against `SMS_PackageStatusDistPointsSummariz
 
 ## Export
 
-CSV and HTML export of the active view. Files land under `Reports/` by default.
+CSV and HTML export of the active view. With a site chosen, files land in the `reports` folder of the site. With no site chosen, they land under `Reports/` beside the script.
 
 ## Project Structure
 
@@ -82,7 +84,7 @@ dp-content-manager/
 |  +- DPContentMgrCommon.psd1                # Module manifest
 |  \- DPContentMgrCommon.psm1                # Business logic (21 functions)
 +- Logs/                                     # Session logs (per-run)
-+- Reports/                                  # CSV / HTML exports
++- Reports/                                  # CSV / HTML exports (with no site chosen)
 +- CHANGELOG.md
 +- LICENSE
 \- README.md

@@ -43,6 +43,9 @@
         'Find-OrphanedContent'
         'Get-DPStorageAnalysis'
 
+        # Site data
+        'Resolve-DpcmReportsPath'
+
         # Export
         'Export-ContentStatusCsv'
         'Export-ContentStatusHtml'

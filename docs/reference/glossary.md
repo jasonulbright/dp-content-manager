@@ -28,6 +28,7 @@ None.
 | Preview | The dialog that lists every pair before an action runs. |
 | Status summarizer | The class `SMS_PackageStatusDistPointsSummarizer`. One query on it gives the status of all pairs. |
 | SMS Provider | The server role that gives access to the site data. |
+| Site folder | The folder `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager`. It holds the settings and the reports of one site. |
 
 ## Steps
 

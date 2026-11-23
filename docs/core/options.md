@@ -22,17 +22,30 @@ Select **Options** in the sidebar.
 
 | Field | Meaning |
 |---|---|
-| **Site Code** | The site code, for example `MCM`. |
+| **Site Code** | The site code, for example `MCM`. The field is read-only when a site is chosen. See [Sites](#sites). |
 | **SMS Provider** | The server with the SMS Provider role. The tool uses it for the PSDrive root. |
 
 ![The Connection page](../images/options-connection.png)
 
 ### Site in the footer
 
-The footer of the main window shows the site on the right, for example `Site MCM`, a middle dot, and `cm01.contoso.com`. It shows `Site not set` while the site code or the provider is empty. The footer is read-only. Select the site text to open Options. You change the site code and the provider only here.
+The footer of the main window shows the site on the right, for example `Site MCM`, a middle dot, and `cm01.contoso.com`. It shows `Site not set` while the site code or the provider is empty. The footer is read-only. Select the site text to open Options. You change the provider only here. The launcher chooses the site code.
+
+### Sites
+
+The AppPackager Suite launcher chooses the site. When a site is chosen, **Site Code** is read-only. The launcher chooses it. With no launcher, the `SiteCode` that an earlier start saved chooses it at the next start. The tooltip says: The site is chosen in the AppPackager Suite launcher. Restart this tool after you change it. **SMS Provider** stays editable and is saved with the site.
+
+The tool keeps its site data per site in `%LOCALAPPDATA%\AppPackagerData\sites\<SITE>\tools\dp-content-manager`, for example `sites\AB1\tools\dp-content-manager`. The site data are the site settings (`prefs.json`) and the `reports` folder. A site such as `CD2` has its own folder and shows none of the data of `AB1`.
+
+A tool that is open keeps its site until you restart it. When the launcher chooses another site, the footer shows a note, for example: The launcher now uses site CD2. This window keeps site AB1 until you restart it.
+
+The first start after an update copies the old data of the site into the site folder. The tool keeps the old files. The log shows `Site AB1; data in <folder>` at each start. When no site is chosen, the tool uses its old places beside the script. When no launcher chose a site, the `SiteCode` in `DPContentMgr.prefs.json` chooses it. To change it, edit that file, or choose the site in the launcher.
+
+![The Site Code field and its tooltip](../images/options-site.png)
+
+![The footer note after the launcher chose another site](../images/footer-site-note.png)
 
 ### About
-
 The page shows the version and a short description.
 
 ![The About page](../images/options-about.png)

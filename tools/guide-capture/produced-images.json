@@ -1,5 +1,5 @@
 {
-  "Count": 27,
+  "Count": 29,
   "Images": [
     "console-missing-refresh.png",
     "content-actions-log.png",
@@ -15,6 +15,7 @@
     "dps-filter-list.png",
     "dps-filter-text.png",
     "dps.png",
+    "footer-site-note.png",
     "issues-before.png",
     "issues.png",
     "light-content.png",
@@ -24,6 +25,7 @@
     "options-about.png",
     "options-connection.png",
     "options-empty.png",
+    "options-site.png",
     "refresh-running.png",
     "refresh-without-connection.png",
     "start-first-run.png",

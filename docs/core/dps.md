@@ -39,7 +39,7 @@ Use it to see which distribution points have problems and how much content each 
 ### Export the view
 
 1. Select **Export CSV** or **Export HTML**.
-2. In the Save As dialog, keep the name or type a new name. The folder is `Reports` beside the script. The name is `DPCM-DPs-<date>-<time>`.
+2. In the Save As dialog, keep the name or type a new name. The folder is the `reports` folder of the site, for example `%LOCALAPPDATA%\AppPackagerData\sites\AB1\tools\dp-content-manager\reports`. With no site chosen, it is `Reports` beside the script. The name is `DPCM-DPs-<date>-<time>`.
 3. Select **Save**. The log shows `Exported CSV:` and the path.
 
 ![The window after an export](../images/dps-exported.png)
